@@ -3,7 +3,6 @@ package br.com.encontreinashopee.di
 import br.com.encontreinashopee.repository.ProductRepository
 import br.com.encontreinashopee.repository.ProductRepositoryApi
 import br.com.encontreinashopee.repository.ProductRepositoryImpl
-import br.com.encontreinashopee.repository.ProductRespositoryApiContract
 import br.com.encontreinashopee.viewmodel.ProductViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -14,8 +13,8 @@ object SearchProductsModule {
 
         viewModel { ProductViewModel(get()) }
 
-        factory<ProductRespositoryApiContract> { ProductRepositoryApi() }
-        factory<ProductRepository> {ProductRepositoryImpl(get())  }
+        single { ProductRepositoryApi() }
+        single<ProductRepository> { ProductRepositoryImpl(get()) }
     }
 
 }
