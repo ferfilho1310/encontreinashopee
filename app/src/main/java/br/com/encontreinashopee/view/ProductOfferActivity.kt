@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting()
+                    OfferList()
                 }
             }
         }
@@ -85,7 +85,7 @@ fun SetComposableStatusBar(color: Color) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Greeting(viewModel: ProductViewModel = koinViewModel()) {
+fun OfferList(viewModel: ProductViewModel = koinViewModel()) {
 
     LaunchedEffect(key1 = "") {
         viewModel.dataIntent.send(SearchProductDataIntent.SearchOffers)

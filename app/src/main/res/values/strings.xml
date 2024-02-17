@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">encontreinashopee</string>
+    <string name="app_name">Encontrei na Shoppe</string>
+    <string name="title_activity_onboarding_offers">Encontrei na Shoppe</string>
 </resources>
