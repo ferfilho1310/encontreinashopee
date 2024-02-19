@@ -58,7 +58,7 @@ fun EncontreinashopeeTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = Color.Red.toArgb()
+            window.statusBarColor = Color(0xFFfa7000).toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
         }
     }

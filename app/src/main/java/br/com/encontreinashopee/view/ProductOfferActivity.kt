@@ -7,18 +7,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -26,29 +24,28 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import br.com.encontreinashopee.R
 import br.com.encontreinashopee.intent.SearchProductDataIntent
 import br.com.encontreinashopee.model.OfferCardModel
-import br.com.encontreinashopee.state.SearchProductDataState
 import br.com.encontreinashopee.state.SearchProductExclusiveDataState
 import br.com.encontreinashopee.ui.theme.EncontreinashopeeTheme
 import br.com.encontreinashopee.viewmodel.ProductViewModel
@@ -63,12 +60,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             EncontreinashopeeTheme {
-                SetComposableStatusBar(color = Color.Red)
+                SetComposableStatusBar(Color(0xFFfa7000))
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = Color(0xFFD3D3D3)
                 ) {
                     OfferList()
+
                 }
             }
         }
@@ -83,69 +81,44 @@ fun SetComposableStatusBar(color: Color) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OfferList(viewModel: ProductViewModel = koinViewModel()) {
-
-    LaunchedEffect(key1 = "") {
-        viewModel.dataIntent.send(SearchProductDataIntent.SearchOffers)
+    LaunchedEffect(key1 = Unit) {
         viewModel.dataIntent.send(SearchProductDataIntent.SearchOffersExclusive)
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Red,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                title = {
-                    Text("Encontrei na Shopee", color = Color.White)
-                }
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.LightGray)
-        ) {
-            OfferExclusive(paddingValues = innerPadding)
-            OffersList()
-        }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFDCDCDC))
+    ) {
+        OfferExclusive()
     }
 }
 
 @Composable
 fun OfferExclusive(
-    paddingValues: PaddingValues,
     viewModel: ProductViewModel = koinViewModel()
 ) {
     when (val list = viewModel.dataStateExclusiveProduct.collectAsState().value) {
         is SearchProductExclusiveDataState.Loading -> {
             ProgressBar(isVisible = true)
-            ListProductExclusive(
-                isVisible = false,
+            ListProduct(
                 listProduct = arrayListOf(),
-                paddingValues = paddingValues
             )
         }
 
         is SearchProductExclusiveDataState.ResponseData -> {
             ProgressBar(isVisible = false)
-            ListProductExclusive(
-                isVisible = true,
+            ListProduct(
                 listProduct = list.data,
-                paddingValues = paddingValues
             )
         }
 
         is SearchProductExclusiveDataState.Error -> {
             ProgressBar(isVisible = false)
-            ListProductExclusive(
-                isVisible = false,
+            ListProduct(
                 listProduct = arrayListOf(),
-                paddingValues = paddingValues
             )
         }
 
@@ -154,48 +127,45 @@ fun OfferExclusive(
 }
 
 @Composable
-fun ListProductExclusive(
-    isVisible: Boolean,
-    listProduct: ArrayList<OfferCardModel>,
-    paddingValues: PaddingValues
+fun ListProduct(
+    listProduct: List<OfferCardModel>,
 ) {
-    if (isVisible)
-        LazyRow(
-            modifier = Modifier
-                .padding(paddingValues)
-        ) {
-            items(
-                items = listProduct,
-                itemContent = { item ->
-                    OfferCard(offerCardModel = item)
-                }
-            )
-        }
+    BannerOffer()
 
+    Text(
+        text = "Produtos para você",
+        modifier = Modifier.padding(start = 12.dp),
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold
+    )
+
+    LazyVerticalGrid(
+        GridCells.Fixed(2)
+    ) {
+        items(listProduct.size) { item ->
+            OfferCard(offerCardModel = listProduct[item])
+        }
+    }
 }
 
 @Composable
-fun ListProduct(
-    isVisible: Boolean,
-    listProduct: ArrayList<OfferCardModel>
-) {
-    if (isVisible)
-        Text(
-            text = "Produtos escolhidos para você",
-            modifier = Modifier.padding(start = 12.dp),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold
-        )
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+fun BannerOffer() {
+    Card(
         modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .padding(4.dp)
     ) {
-        items(listProduct.size) { index ->
-            OfferCard(offerCardModel = listProduct[index])
-        }
+        Image(
+            painter = painterResource(id = R.drawable.banner),
+            contentDescription = "",
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .height(150.dp),
+            contentScale = ContentScale.Crop,
+        )
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -203,36 +173,47 @@ fun ListProduct(
 fun OfferCard(offerCardModel: OfferCardModel) {
 
     val context = LocalContext.current
-    val intent =
-        remember { Intent(Intent.ACTION_VIEW, Uri.parse(offerCardModel.urlOffer.orEmpty())) }
+    val intent = remember {
+        Intent(Intent.ACTION_VIEW, Uri.parse(offerCardModel.urlOffer.orEmpty()))
+    }
 
     Card(
         onClick = {
             context.startActivity(intent)
         },
-        modifier = Modifier.padding(8.dp),
+        modifier = Modifier.padding(4.dp),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 20.dp
-        )
+        ),
     ) {
         Column(
             modifier = Modifier
-                .width(200.dp)
+                .width(186.dp)
                 .background(Color.White)
         ) {
             ImageProduct(urlImage = offerCardModel.offerImage.orEmpty())
 
             Text(
                 text = offerCardModel.offerTitle.orEmpty(),
-                modifier = Modifier.padding(12.dp)
+                modifier = Modifier.padding(start = 8.dp, top = 8.dp),
+                fontWeight = FontWeight.Bold
             )
+
+            Row(modifier = Modifier.padding(start = 8.dp, top = 2.dp)) {
+                Text(
+                    text = "A partir de: ",
+                )
+                Text(
+                    text = offerCardModel.offerPrice.orEmpty(),
+                )
+            }
 
             Button(
                 onClick = { context.startActivity(intent) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(end = 12.dp, start = 12.dp, bottom = 12.dp),
-                colors = ButtonDefaults.buttonColors(Color.Red),
+                    .padding(end = 12.dp, start = 12.dp, bottom = 12.dp, top = 22.dp),
+                colors = ButtonDefaults.buttonColors(Color(0xFFfa7000)),
             ) {
                 Text(text = "Saiba Mais", style = TextStyle(color = Color.White))
             }
@@ -244,6 +225,7 @@ fun OfferCard(offerCardModel: OfferCardModel) {
 fun ImageProduct(urlImage: String) {
     val painter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
+            .crossfade(true)
             .data(urlImage)
             .build()
     )
@@ -252,49 +234,44 @@ fun ImageProduct(urlImage: String) {
         contentDescription = "",
         modifier = Modifier
             .height(165.dp)
-            .padding(top = 12.dp)
+            .fillMaxWidth(),
+        contentScale = ContentScale.Crop,
     )
 }
 
 @Composable
 fun ProgressBar(isVisible: Boolean) {
     if (isVisible) {
-        CircularProgressIndicator(
-            progress = 18f,
-            modifier = Modifier
-                .height(40.dp)
-                .clip(RoundedCornerShape(10.dp)),
-            color = Color.Red
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            CircularProgressIndicator(
+                progress = 0.5f,
+                modifier = Modifier
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(10.dp)),
+                color = Color(0xFFfa7000)
+            )
+        }
     }
 }
-
-@Composable
-fun OffersList(viewModel: ProductViewModel = koinViewModel()) {
-    when (val list = viewModel.dataState.collectAsState().value) {
-        is SearchProductDataState.Loading -> {
-            ProgressBar(isVisible = true)
-            ListProduct(isVisible = false, listProduct = arrayListOf())
-        }
-
-        is SearchProductDataState.ResponseData -> {
-            ProgressBar(isVisible = false)
-            ListProduct(isVisible = true, listProduct = list.data)
-        }
-
-        is SearchProductDataState.Error -> {
-            ProgressBar(isVisible = false)
-        }
-
-        is SearchProductDataState.Inactive -> Unit
-    }
-}
-
 
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     EncontreinashopeeTheme {
-        ProgressBar(isVisible = true)
+        val model = arrayListOf(
+            OfferCardModel(offerTitle = "teste", offerPrice = "R$ 120,50"),
+            OfferCardModel(offerTitle = "teste"),
+            OfferCardModel(offerTitle = "teste"),
+            OfferCardModel(offerTitle = "teste"),
+            OfferCardModel(offerTitle = "teste"),
+            OfferCardModel(offerTitle = "teste"),
+            OfferCardModel(offerTitle = "teste")
+        )
+
+        ListProduct(model)
     }
 }

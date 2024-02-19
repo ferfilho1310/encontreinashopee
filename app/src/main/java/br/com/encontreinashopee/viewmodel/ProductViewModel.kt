@@ -22,7 +22,8 @@ class ProductViewModel(
     val dataIntent = Channel<SearchProductDataIntent>(Channel.UNLIMITED)
 
     val dataState = MutableStateFlow<SearchProductDataState>(SearchProductDataState.Inactive)
-    val dataStateExclusiveProduct = MutableStateFlow<SearchProductExclusiveDataState>(SearchProductExclusiveDataState.Inactive)
+    val dataStateExclusiveProduct =
+        MutableStateFlow<SearchProductExclusiveDataState>(SearchProductExclusiveDataState.Inactive)
 
     init {
         handleEvents()
@@ -45,7 +46,7 @@ class ProductViewModel(
             dataStateExclusiveProduct.value = SearchProductExclusiveDataState.Loading
             repository.searchExclusiveOffersProduct()
                 .onEach {
-                    dataStateExclusiveProduct.value = SearchProductExclusiveDataState.ResponseData(it)
+                    dataStateExclusiveProduct.value = SearchProductExclusiveDataState.ResponseData(it.sortedByDescending { it.id?.toInt() } )
                 }.catch {
                     dataStateExclusiveProduct.value = SearchProductExclusiveDataState.Error(it)
                 }.launchIn(viewModelScope)
@@ -56,8 +57,8 @@ class ProductViewModel(
         viewModelScope.launch {
             dataIntent.consumeAsFlow().collect {
                 when (it) {
-                    is SearchProductDataIntent.SearchOffers -> searchOffers()
                     is SearchProductDataIntent.SearchOffersExclusive -> searchExclusiveOffers()
+                    else -> Unit
                 }
             }
         }

@@ -12,6 +12,6 @@ sealed class SearchProductDataState {
 sealed class SearchProductExclusiveDataState {
     data object Inactive : SearchProductExclusiveDataState()
     data object Loading : SearchProductExclusiveDataState()
-    data class ResponseData(val data: ArrayList<OfferCardModel>) : SearchProductExclusiveDataState()
+    data class ResponseData(val data: List<OfferCardModel>) : SearchProductExclusiveDataState()
     data class Error(val error: Throwable?) : SearchProductExclusiveDataState()
 }

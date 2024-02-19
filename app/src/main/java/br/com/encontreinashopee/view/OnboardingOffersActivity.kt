@@ -16,10 +16,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,8 +30,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import br.com.encontreinashopee.R
+import br.com.encontreinashopee.util.PreferencesManager
 import br.com.encontreinashopee.view.Key.OFFER_LIST
 import br.com.encontreinashopee.view.Key.ONBOARDING
+import br.com.encontreinashopee.view.Key.PREFERENCES_KEY
 import br.com.encontreinashopee.view.ui.theme.EncontreinashopeeTheme
 
 class OnboardingOffersActivity : ComponentActivity() {
@@ -37,7 +41,6 @@ class OnboardingOffersActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             EncontreinashopeeTheme {
-
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -51,6 +54,8 @@ class OnboardingOffersActivity : ComponentActivity() {
 
 @Composable
 fun OnboardingScreen(navHostController: NavHostController) {
+    val context = LocalContext.current
+    val preferencesManager = remember { PreferencesManager(context) }
 
     Column(
         modifier = Modifier
@@ -60,7 +65,7 @@ fun OnboardingScreen(navHostController: NavHostController) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(
-            painterResource(R.drawable.imageonboarding),
+            painterResource(R.drawable.icononboarding),
             contentDescription = "",
             contentScale = ContentScale.Crop,
             modifier = Modifier.height(300.dp)
@@ -82,8 +87,9 @@ fun OnboardingScreen(navHostController: NavHostController) {
                     }
                 }
 
+                preferencesManager.saveData(PREFERENCES_KEY, true)
             },
-            colors = ButtonDefaults.buttonColors(Color.Red),
+            colors = ButtonDefaults.buttonColors(Color(0xFFfa7000)),
         ) {
             Text(text = "Ver as Ofertas")
         }
@@ -92,11 +98,18 @@ fun OnboardingScreen(navHostController: NavHostController) {
 
 @Composable
 fun ComposeNavigation() {
+    val context = LocalContext.current
+    val preferencesManager = remember { PreferencesManager(context) }
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = ONBOARDING) {
         composable(ONBOARDING) {
-            OnboardingScreen(navHostController = navController)
+            val preferences = preferencesManager.getData(PREFERENCES_KEY, false)
+            if (preferences) {
+                OfferList()
+            } else {
+                OnboardingScreen(navHostController = navController)
+            }
         }
         composable(OFFER_LIST) {
             OfferList()
@@ -107,6 +120,7 @@ fun ComposeNavigation() {
 object Key {
     const val ONBOARDING = "Onboarding"
     const val OFFER_LIST = "OfferList"
+    const val PREFERENCES_KEY = "Key"
 }
 
 @Preview(showBackground = true)
