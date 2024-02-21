@@ -61,16 +61,16 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation ("androidx.compose.material3:material3:1.2.0-beta02")
-    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.35.0-alpha")
+    implementation("androidx.compose.material3:material3:1.2.0-beta02")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.35.0-alpha")
 
     //coil
     implementation("io.coil-kt:coil-compose:2.5.0")
 
     //koin
-    implementation ("io.insert-koin:koin-core:3.5.3")
-    implementation ("io.insert-koin:koin-android:3.5.3")
-    implementation ("io.insert-koin:koin-androidx-compose:3.5.3")
+    implementation("io.insert-koin:koin-core:3.5.3")
+    implementation("io.insert-koin:koin-android:3.5.3")
+    implementation("io.insert-koin:koin-androidx-compose:3.5.3")
 
     //firebase
     implementation("com.google.firebase:firebase-crashlytics:18.6.2")
@@ -94,5 +94,14 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     //splash
-    implementation ("androidx.core:core-splashscreen:1.0.1")
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
+    //firebase messaging
+    implementation("com.google.firebase:firebase-messaging-ktx:23.4.1")
+
+    // lottie
+    implementation("com.airbnb.android:lottie-compose:4.0.0")
+
+    // notification permission
+    implementation ("com.google.accompanist:accompanist-permissions:0.30.1")
 }

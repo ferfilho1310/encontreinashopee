@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -23,7 +24,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
@@ -60,8 +60,10 @@ import br.com.encontreinashopee.ui.theme.EncontreinashopeeTheme
 import br.com.encontreinashopee.viewmodel.ProductViewModel
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import org.koin.android.ext.android.inject
 import org.koin.androidx.compose.koinViewModel
 
 class MainActivity : ComponentActivity() {
@@ -77,7 +79,6 @@ class MainActivity : ComponentActivity() {
                     color = Color(0xFFD3D3D3)
                 ) {
                     OfferList()
-
                 }
             }
         }
@@ -255,9 +256,6 @@ fun OfferCard(offerCardModel: OfferCardModel) {
     }
 
     Card(
-        onClick = {
-            context.startActivity(intent)
-        },
         modifier = Modifier.padding(4.dp),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 20.dp
@@ -339,19 +337,19 @@ fun ImageProductBottomSheet(urlImage: String) {
 
 @Composable
 fun ProgressBar() {
+
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.corujinha))
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxSize()
     ) {
-        CircularProgressIndicator(
-            modifier = Modifier
-                .clip(RoundedCornerShape(10.dp)),
-            color = Color(0xFFfa7000)
-        )
+        LottieAnimation(composition, modifier = Modifier.size(150.dp))
+
         Text(
             modifier = Modifier.padding(top = 12.dp),
-            text = "Encontrando Ofertas", color = Color.Black,
+            text = "Buscando Ofertas", color = Color.Black,
             fontWeight = FontWeight.Bold
         )
     }
