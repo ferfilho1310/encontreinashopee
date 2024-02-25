@@ -48,11 +48,12 @@ class OnboardingOffersActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             EncontreinashopeeTheme {
+                SetComposableStatusBar(Color(0xFFfa7000))
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    checkNotificationPolicyAccess()
+                    CheckNotificationPolicyAccess()
                     ComposeNavigation()
                 }
             }
@@ -62,15 +63,14 @@ class OnboardingOffersActivity : ComponentActivity() {
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun checkNotificationPolicyAccess(
-
-) {
-
+fun CheckNotificationPolicyAccess() {
     val getPermission = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
+            Unit
         } else {
+            Unit
         }
     }
 

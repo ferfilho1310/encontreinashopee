@@ -16,14 +16,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -57,12 +59,15 @@ import br.com.encontreinashopee.intent.SearchProductDataIntent
 import br.com.encontreinashopee.model.OfferCardModel
 import br.com.encontreinashopee.state.SearchProductExclusiveDataState
 import br.com.encontreinashopee.ui.theme.EncontreinashopeeTheme
+import br.com.encontreinashopee.view.autoimageslider.AutoSlide.AutoSlidingCarousel
 import br.com.encontreinashopee.viewmodel.ProductViewModel
+import coil.compose.SubcomposeAsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import org.koin.androidx.compose.koinViewModel
 
@@ -199,18 +204,23 @@ fun ListProduct(
             fontWeight = FontWeight.Bold
         )
 
-        LazyVerticalGrid(
-            GridCells.Fixed(2)
-        ) {
-            items(listProduct.size) { item ->
-                OfferCard(offerCardModel = listProduct[item])
+        LazyVerticalStaggeredGrid(
+            columns = StaggeredGridCells.Adaptive(150.dp),
+            verticalItemSpacing = 4.dp,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            content = {
+                items(listProduct.size) { item ->
+                    OfferCard(offerCardModel = listProduct[item])
+                }
             }
-        }
+        )
+
     } else {
         ProgressBar()
     }
 }
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun BannerOffer() {
     Card(
@@ -218,17 +228,24 @@ fun BannerOffer() {
             .clip(RoundedCornerShape(8.dp))
             .padding(4.dp)
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.banner),
-            contentDescription = "",
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .height(150.dp),
-            contentScale = ContentScale.Crop,
-        )
-    }
 
+        val listImage = arrayListOf(
+            painterResource(id = R.drawable.banner),
+            painterResource(id = R.drawable.comunidade)
+        )
+
+        AutoSlidingCarousel(itemsCount = listImage.size) {
+            Image(
+                painter = listImage[it],
+                contentDescription = "",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(White)
+                    .height(150.dp),
+                contentScale = ContentScale.Crop,
+            )
+        }
+    }
 }
 
 @Composable
@@ -263,14 +280,24 @@ fun OfferCard(offerCardModel: OfferCardModel) {
     ) {
         Column(
             modifier = Modifier
-                .width(186.dp)
-                .background(Color.White)
+                .fillMaxWidth()
+                .background(White)
         ) {
+
             ImageProduct(urlImage = offerCardModel.offerImage.orEmpty())
+
+            if (!offerCardModel.tag.isNullOrEmpty()) {
+                Text(
+                    text = offerCardModel.tag,
+                    color = Color.Red,
+                    modifier = Modifier.padding(start = 8.dp, end = 8.dp),
+                    fontWeight = FontWeight.Bold,
+                )
+            }
 
             Text(
                 text = offerCardModel.offerTitle.orEmpty(),
-                modifier = Modifier.padding(start = 8.dp, top = 8.dp),
+                modifier = Modifier.padding(start = 8.dp, top = 4.dp),
                 fontWeight = FontWeight.Bold
             )
 
@@ -289,7 +316,7 @@ fun OfferCard(offerCardModel: OfferCardModel) {
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(end = 12.dp, start = 12.dp, bottom = 12.dp, top = 22.dp),
+                    .padding(end = 12.dp, start = 12.dp, bottom = 12.dp, top = 12.dp),
                 colors = ButtonDefaults.buttonColors(Color(0xFFfa7000)),
             ) {
                 Text(text = "Saiba Mais", style = TextStyle(color = Color.White))
@@ -306,6 +333,7 @@ fun ImageProduct(urlImage: String) {
             .data(urlImage)
             .build()
     )
+
     Image(
         painter = painter,
         contentDescription = "",
@@ -314,24 +342,22 @@ fun ImageProduct(urlImage: String) {
             .fillMaxWidth(),
         contentScale = ContentScale.Crop,
     )
+
 }
 
 @Composable
 fun ImageProductBottomSheet(urlImage: String) {
-    val painter = rememberAsyncImagePainter(
-        model = ImageRequest.Builder(LocalContext.current)
-            .crossfade(true)
-            .data(urlImage)
-            .build()
-    )
-    Image(
-        painter = painter,
-        contentDescription = "",
+    SubcomposeAsyncImage(
+        model = urlImage,
         modifier = Modifier
             .height(100.dp)
             .width(100.dp)
             .padding(8.dp),
         contentScale = ContentScale.Crop,
+        contentDescription = "",
+        loading = {
+            CircularProgressIndicator()
+        }
     )
 }
 
@@ -349,7 +375,7 @@ fun ProgressBar() {
 
         Text(
             modifier = Modifier.padding(top = 12.dp),
-            text = "Buscando Ofertas", color = Color.Black,
+            text = "Buscando Ofertas...", color = Color.Black,
             fontWeight = FontWeight.Bold
         )
     }
@@ -364,16 +390,9 @@ interface ListenerBottomSheet {
 @Composable
 fun GreetingPreview() {
     EncontreinashopeeTheme {
-        val model = arrayListOf(
-            OfferCardModel(offerTitle = "teste", offerPrice = "R$ 120,50"),
-            OfferCardModel(offerTitle = "teste"),
-            OfferCardModel(offerTitle = "teste"),
-            OfferCardModel(offerTitle = "teste"),
-            OfferCardModel(offerTitle = "teste"),
-            OfferCardModel(offerTitle = "teste"),
-            OfferCardModel(offerTitle = "teste")
-        )
+        val model =
+            OfferCardModel(offerTitle = "teste", offerPrice = "R$ 120,50")
 
-        ListProduct(true, model)
+        OfferCard(model)
     }
 }

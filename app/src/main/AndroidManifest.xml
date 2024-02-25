@@ -23,6 +23,7 @@
             android:name=".view.OnboardingOffersActivity"
             android:exported="true"
             android:label="@string/title_activity_onboarding_offers"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Encontreinashopee">
 
             <intent-filter>
@@ -36,6 +37,7 @@
             android:name=".view.MainActivity"
             android:exported="false"
             android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Encontreinashopee" />
 
         <service
@@ -46,6 +48,7 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/icononboarding" />

@@ -63,6 +63,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3:1.2.0-beta02")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.35.0-alpha")
+    implementation("com.google.accompanist:accompanist-pager:0.22.0-rc")
 
     //coil
     implementation("io.coil-kt:coil-compose:2.5.0")
@@ -98,6 +99,7 @@ dependencies {
 
     //firebase messaging
     implementation("com.google.firebase:firebase-messaging-ktx:23.4.1")
+    implementation("com.google.firebase:firebase-inappmessaging-display:20.4.0")
 
     // lottie
     implementation("com.airbnb.android:lottie-compose:4.0.0")
