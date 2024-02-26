@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -56,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.com.encontreinashopee.R
 import br.com.encontreinashopee.intent.SearchProductDataIntent
+import br.com.encontreinashopee.model.BannerList
 import br.com.encontreinashopee.model.OfferCardModel
 import br.com.encontreinashopee.state.SearchProductExclusiveDataState
 import br.com.encontreinashopee.ui.theme.EncontreinashopeeTheme
@@ -70,6 +72,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import org.koin.androidx.compose.koinViewModel
+
 
 class MainActivity : ComponentActivity() {
 
@@ -165,22 +168,22 @@ fun OfferExclusive(
 ) {
     when (val list = viewModel.dataStateExclusiveProduct.collectAsState().value) {
         is SearchProductExclusiveDataState.Loading -> {
+            ProgressBar(true)
             ListProduct(
-                false,
                 listProduct = arrayListOf(),
             )
         }
 
         is SearchProductExclusiveDataState.ResponseData -> {
+            ProgressBar(false)
             ListProduct(
-                true,
                 listProduct = list.data,
             )
         }
 
         is SearchProductExclusiveDataState.Error -> {
+            ProgressBar(true)
             ListProduct(
-                false,
                 listProduct = arrayListOf(),
             )
         }
@@ -191,57 +194,60 @@ fun OfferExclusive(
 
 @Composable
 fun ListProduct(
-    isVisible: Boolean,
     listProduct: List<OfferCardModel>,
 ) {
-    if (isVisible) {
-        BannerOffer()
+    val context = LocalContext.current
 
-        Text(
-            text = "Produtos para você",
-            modifier = Modifier.padding(start = 12.dp),
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        LazyVerticalStaggeredGrid(
-            columns = StaggeredGridCells.Adaptive(150.dp),
-            verticalItemSpacing = 4.dp,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            content = {
-                items(listProduct.size) { item ->
-                    OfferCard(offerCardModel = listProduct[item])
-                }
-            }
-        )
-
-    } else {
-        ProgressBar()
+    BannerOffer {
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(it))
+        context.startActivity(browserIntent)
     }
+
+    Text(
+        text = "Produtos para você",
+        modifier = Modifier.padding(start = 12.dp),
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold
+    )
+
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Adaptive(150.dp),
+        verticalItemSpacing = 4.dp,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        content = {
+            items(listProduct.size) { item ->
+                OfferCard(offerCardModel = listProduct[item])
+            }
+        }
+    )
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun BannerOffer() {
+fun BannerOffer(listener: ListenerBanner) {
     Card(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
             .padding(4.dp)
     ) {
-
         val listImage = arrayListOf(
-            painterResource(id = R.drawable.banner),
-            painterResource(id = R.drawable.comunidade)
+            BannerList(img = painterResource(id = R.drawable.banner)),
+            BannerList(img = painterResource(id = R.drawable.comunidade), url = URL.url),
         )
 
         AutoSlidingCarousel(itemsCount = listImage.size) {
             Image(
-                painter = listImage[it],
+                painter = listImage[it].img,
                 contentDescription = "",
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(White)
-                    .height(150.dp),
+                    .height(150.dp)
+                    .clickable {
+                        if (!listImage[it].url.isNullOrEmpty()) {
+                            listener.onClickLinkBanner(listImage[it].url.orEmpty())
+                        }
+                    },
                 contentScale = ContentScale.Crop,
             )
         }
@@ -362,28 +368,38 @@ fun ImageProductBottomSheet(urlImage: String) {
 }
 
 @Composable
-fun ProgressBar() {
+fun ProgressBar(isVisible: Boolean) {
 
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.corujinha))
+    if (isVisible) {
+        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.corujinha))
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        LottieAnimation(composition, modifier = Modifier.size(150.dp))
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            LottieAnimation(composition, modifier = Modifier.size(150.dp))
 
-        Text(
-            modifier = Modifier.padding(top = 12.dp),
-            text = "Buscando Ofertas...", color = Color.Black,
-            fontWeight = FontWeight.Bold
-        )
+            Text(
+                modifier = Modifier.padding(top = 12.dp),
+                text = "Buscando Ofertas...", color = Color.Black,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 
 interface ListenerBottomSheet {
     fun onClickButton()
     fun onDismiss()
+}
+
+fun interface ListenerBanner {
+    fun onClickLinkBanner(urlImage: String)
+}
+
+object URL {
+    const val url = "https://chat.whatsapp.com/KR4Pvdr4AQwCeP3Bsu1lLg"
 }
 
 @Preview(showBackground = true)
