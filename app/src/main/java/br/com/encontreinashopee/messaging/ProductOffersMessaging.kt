@@ -6,12 +6,10 @@ import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_DEFAULT
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
-import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
-import android.media.RingtoneManager
-import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import br.com.encontreinashopee.R
 import br.com.encontreinashopee.view.MainActivity
@@ -29,6 +27,7 @@ class ProductOffersMessaging : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
+        Log.i("Token - Firebase", token)
     }
 
     private fun sendNotification(message: RemoteMessage) {

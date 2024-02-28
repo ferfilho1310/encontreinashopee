@@ -1,10 +1,12 @@
 package br.com.encontreinashopee.view
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,6 +30,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -71,6 +74,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.firebase.FirebaseApp
 import org.koin.androidx.compose.koinViewModel
 
 
@@ -78,7 +82,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        FirebaseApp.initializeApp(this)
         setContent {
             EncontreinashopeeTheme {
                 SetComposableStatusBar(Color(0xFFfa7000))
@@ -141,7 +145,7 @@ fun BottomSheetAlert(
                     .fillMaxWidth()
                     .padding(bottom = 50.dp, start = 12.dp, end = 12.dp)
             ) {
-                Text(text = "Navegar para Oferta", color = Color.White)
+                Text(text = "Ir para Oferta", color = White)
             }
         }
     }
@@ -261,6 +265,7 @@ fun OfferCard(offerCardModel: OfferCardModel) {
     val intent = remember {
         Intent(Intent.ACTION_VIEW, Uri.parse(offerCardModel.urlOffer.orEmpty()))
     }
+
     var showSheet by remember { mutableStateOf(false) }
 
     if (showSheet) {
@@ -322,13 +327,47 @@ fun OfferCard(offerCardModel: OfferCardModel) {
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(end = 12.dp, start = 12.dp, bottom = 12.dp, top = 12.dp),
+                    .padding(end = 12.dp, start = 12.dp, top = 12.dp),
                 colors = ButtonDefaults.buttonColors(Color(0xFFfa7000)),
+                elevation = ButtonDefaults.buttonElevation(10.dp)
             ) {
-                Text(text = "Saiba Mais", style = TextStyle(color = Color.White))
+                Text(text = "Saiba Mais", style = TextStyle(color = White))
+            }
+
+            OutlinedButton(
+                onClick = {
+                    shareSheetOffer(context, offerCardModel)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 8.dp, start = 8.dp, bottom = 12.dp),
+                colors = ButtonDefaults.buttonColors(White),
+                elevation = ButtonDefaults.buttonElevation(10.dp),
+                border = BorderStroke(1.dp, Color(0xFFfa7000))
+            ) {
+                Text(
+                    text = "Compartilhar Oferta",
+                    style = TextStyle(fontSize = 14.sp, color = Color(0xFFfa7000))
+                )
             }
         }
     }
+}
+
+
+fun shareSheetOffer(context: Context, offerCardModel: OfferCardModel) {
+    val sendIntent: Intent = Intent().apply {
+        action = Intent.ACTION_SEND
+        putExtra(Intent.EXTRA_TITLE, "Titulo")
+        putExtra(
+            Intent.EXTRA_TEXT,
+            "Dê uma olhada nesta oferta\n" + offerCardModel.offerTitle + ".\n" + "Clique no link: " + offerCardModel.urlOffer
+        )
+        type = "text/plain"
+    }
+
+    val shareIntent = Intent.createChooser(sendIntent, "Você está compartilhando: " + offerCardModel.offerTitle)
+    context.startActivity(shareIntent)
 }
 
 @Composable
