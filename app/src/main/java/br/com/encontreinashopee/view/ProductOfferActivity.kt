@@ -9,6 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,7 +22,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -29,13 +34,17 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -54,6 +63,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -199,8 +209,16 @@ fun OfferExclusive(
 @Composable
 fun ListProduct(
     listProduct: List<OfferCardModel>,
+    viewModel: ProductViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
+    val textState = remember {
+        mutableStateOf(TextFieldValue(""))
+    }
+
+    SearchView(state = textState, placeHolder = "Pequise por Ofertas...")
+
+    val searchText = textState.value.text
 
     BannerOffer {
         val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(it))
@@ -208,22 +226,61 @@ fun ListProduct(
     }
 
     Text(
-        text = "Produtos para você",
-        modifier = Modifier.padding(start = 12.dp),
+        text = "Ofertas para você",
+        modifier = Modifier.padding(start = 4.dp, top = 4.dp),
         fontSize = 16.sp,
         fontWeight = FontWeight.Bold
     )
 
     LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Adaptive(150.dp),
-        verticalItemSpacing = 4.dp,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        content = {
-            items(listProduct.size) { item ->
-                OfferCard(offerCardModel = listProduct[item])
-            }
+        columns = StaggeredGridCells.Fixed(2)
+    ) {
+        items(
+            viewModel.filterOffer(searchText, listProduct)
+        ) {
+            OfferCard(offerCardModel = it)
         }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchView(
+    state: MutableState<TextFieldValue>,
+    placeHolder: String
+) {
+
+    TextField(
+        value = state.value,
+        onValueChange = { value ->
+            state.value = value
+        },
+        Modifier
+            .fillMaxWidth()
+            .padding(start = 4.dp, top = 8.dp, bottom = 8.dp, end = 4.dp)
+            .clip(RoundedCornerShape(30.dp))
+            .border(1.dp, Color.DarkGray, RoundedCornerShape(30.dp)),
+        placeholder = {
+            Text(text = placeHolder)
+        },
+        trailingIcon = {
+            Icon(
+                Icons.Default.Search,
+                contentDescription = "",
+                tint = Color.Black
+            )
+        },
+        colors = TextFieldDefaults.textFieldColors(
+            containerColor = White,
+        ),
+        maxLines = 1,
+        singleLine = true,
+        textStyle = TextStyle(
+            color = Color.Black, fontSize = 20.sp
+        ),
     )
+
 }
 
 @OptIn(ExperimentalPagerApi::class)
@@ -366,7 +423,8 @@ fun shareSheetOffer(context: Context, offerCardModel: OfferCardModel) {
         type = "text/plain"
     }
 
-    val shareIntent = Intent.createChooser(sendIntent, "Você está compartilhando: " + offerCardModel.offerTitle)
+    val shareIntent =
+        Intent.createChooser(sendIntent, "Você está compartilhando: " + offerCardModel.offerTitle)
     context.startActivity(shareIntent)
 }
 

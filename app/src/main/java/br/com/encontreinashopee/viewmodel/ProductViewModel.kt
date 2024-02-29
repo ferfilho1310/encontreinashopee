@@ -1,8 +1,11 @@
 package br.com.encontreinashopee.viewmodel
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.encontreinashopee.intent.SearchProductDataIntent
+import br.com.encontreinashopee.model.OfferCardModel
 import br.com.encontreinashopee.repository.ProductRepository
 import br.com.encontreinashopee.state.SearchProductDataState
 import br.com.encontreinashopee.state.SearchProductExclusiveDataState
@@ -25,6 +28,8 @@ class ProductViewModel(
     val dataStateExclusiveProduct =
         MutableStateFlow<SearchProductExclusiveDataState>(SearchProductExclusiveDataState.Inactive)
 
+    private val _filterOffer: MutableLiveData<List<OfferCardModel>> = MutableLiveData()
+
     init {
         handleEvents()
     }
@@ -46,19 +51,25 @@ class ProductViewModel(
             dataStateExclusiveProduct.value = SearchProductExclusiveDataState.Loading
             repository.searchExclusiveOffersProduct()
                 .onEach {
-                    dataStateExclusiveProduct.value = SearchProductExclusiveDataState.ResponseData(it.sortedByDescending { it.id?.toInt() } )
+                    dataStateExclusiveProduct.value =
+                        SearchProductExclusiveDataState.ResponseData(it.sortedByDescending { it.id?.toInt() })
                 }.catch {
                     dataStateExclusiveProduct.value = SearchProductExclusiveDataState.Error(it)
                 }.launchIn(viewModelScope)
         }
     }
 
+    fun filterOffer(textFilter: String, listOffers: List<OfferCardModel>) =
+        listOffers.filter {
+            it.offerTitle.orEmpty().contains(textFilter, ignoreCase = true)
+        }
+
+
     private fun handleEvents() {
         viewModelScope.launch {
             dataIntent.consumeAsFlow().collect {
                 when (it) {
                     is SearchProductDataIntent.SearchOffersExclusive -> searchExclusiveOffers()
-                    else -> Unit
                 }
             }
         }
