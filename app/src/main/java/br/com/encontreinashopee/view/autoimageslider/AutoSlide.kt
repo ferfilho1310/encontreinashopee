@@ -81,8 +81,10 @@ object AutoSlide {
         val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
 
         LaunchedEffect(pagerState.currentPage) {
-            delay(5000)
-            pagerState.animateScrollToPage((pagerState.currentPage + 1) % itemsCount)
+            if(pagerState.pageCount != 0) {
+                delay(5000)
+                pagerState.animateScrollToPage((pagerState.currentPage + 1) % itemsCount)
+            }
         }
 
         Box(
