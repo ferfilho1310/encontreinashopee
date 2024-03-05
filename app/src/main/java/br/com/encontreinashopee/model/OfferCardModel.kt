@@ -11,5 +11,8 @@ data class OfferCardModel(
     val identifier: String? = null,
     val offerPrice: String? = null,
     val id: String? = null,
-    val tag: String? = null
+    val tag: String? = null,
+    val idVideo: String? = null,
+    val listImage: List<String>? = null,
+    val description: String? = null
 ) : Parcelable

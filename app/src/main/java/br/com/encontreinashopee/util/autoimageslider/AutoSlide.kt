@@ -1,4 +1,4 @@
-package br.com.encontreinashopee.view.autoimageslider
+package br.com.encontreinashopee.util.autoimageslider
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.collectIsDraggedAsState

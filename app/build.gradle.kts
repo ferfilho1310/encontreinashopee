@@ -4,6 +4,7 @@ plugins {
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
     id("kotlin-parcelize")
+    id("com.google.devtools.ksp").version("1.6.10-1.0.4")
 }
 
 android {
@@ -81,6 +82,7 @@ dependencies {
     implementation(platform("androidx.compose:compose-bom:2023.08.00"))
     implementation("androidx.compose.material3:material3")
     implementation(platform("androidx.compose:compose-bom:2023.08.00"))
+    implementation(platform("androidx.compose:compose-bom:2023.08.00"))
 
     //test
     testImplementation("junit:junit:4.13.2")
@@ -88,6 +90,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
@@ -106,4 +109,12 @@ dependencies {
 
     // notification permission
     implementation ("com.google.accompanist:accompanist-permissions:0.30.1")
+
+    // Moshi
+    implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.13.0")
+
+    implementation("com.google.android.exoplayer:exoplayer:2.19.1")
+
+    implementation ("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
 }

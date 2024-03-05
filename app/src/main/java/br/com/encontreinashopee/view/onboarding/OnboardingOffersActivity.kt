@@ -1,4 +1,4 @@
-package br.com.encontreinashopee.view
+package br.com.encontreinashopee.view.onboarding
 
 import android.Manifest
 import android.os.Build
@@ -37,9 +37,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import br.com.encontreinashopee.R
 import br.com.encontreinashopee.util.PreferencesManager
-import br.com.encontreinashopee.view.Key.OFFER_LIST
-import br.com.encontreinashopee.view.Key.ONBOARDING
-import br.com.encontreinashopee.view.Key.PREFERENCES_KEY
+import br.com.encontreinashopee.view.ScreenNavigationKeys.Key.OFFER_LIST
+import br.com.encontreinashopee.view.ScreenNavigationKeys.Key.ONBOARDING
+import br.com.encontreinashopee.view.ScreenNavigationKeys.Key.PREFERENCES_KEY
+import br.com.encontreinashopee.view.productoffer.OfferList
+import br.com.encontreinashopee.view.productoffer.SetComposableStatusBar
 import br.com.encontreinashopee.view.ui.theme.EncontreinashopeeTheme
 
 class OnboardingOffersActivity : ComponentActivity() {
@@ -144,11 +146,6 @@ fun ComposeNavigation() {
     }
 }
 
-object Key {
-    const val ONBOARDING = "Onboarding"
-    const val OFFER_LIST = "OfferList"
-    const val PREFERENCES_KEY = "Key"
-}
 
 @Preview(showBackground = true)
 @Composable
