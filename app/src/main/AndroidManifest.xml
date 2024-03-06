@@ -34,7 +34,7 @@
         </activity>
 
         <activity
-            android:name=".view.productoffer.MainActivity"
+            android:name=".view.productoffer.ProductOfferActivity"
             android:exported="false"
             android:label="@string/app_name"
             android:screenOrientation="portrait"

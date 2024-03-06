@@ -87,8 +87,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.firebase.FirebaseApp
 import org.koin.androidx.compose.koinViewModel
 
-
-class MainActivity : ComponentActivity() {
+class ProductOfferActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
