@@ -1,4 +1,4 @@
-package br.com.encontreinashopee.view
+package br.com.encontreinashopee.view.productoffer
 
 import android.content.Context
 import android.content.Intent
@@ -25,7 +25,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
@@ -74,7 +73,8 @@ import br.com.encontreinashopee.model.BannerList
 import br.com.encontreinashopee.model.OfferCardModel
 import br.com.encontreinashopee.state.SearchProductExclusiveDataState
 import br.com.encontreinashopee.ui.theme.EncontreinashopeeTheme
-import br.com.encontreinashopee.view.autoimageslider.AutoSlide.AutoSlidingCarousel
+import br.com.encontreinashopee.util.autoimageslider.AutoSlide.AutoSlidingCarousel
+import br.com.encontreinashopee.view.offerdetails.ProducOfferDetailActivity
 import br.com.encontreinashopee.viewmodel.ProductViewModel
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -87,8 +87,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.firebase.FirebaseApp
 import org.koin.androidx.compose.koinViewModel
 
-
-class MainActivity : ComponentActivity() {
+class ProductOfferActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -118,7 +117,7 @@ fun SetComposableStatusBar(color: Color) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetAlert(
-    offerCardModel: OfferCardModel,
+    offerCardModel: OfferCardModel?,
     listenerBottomSheet: ListenerBottomSheet? = null
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState()
@@ -134,12 +133,12 @@ fun BottomSheetAlert(
 
         Column {
             Row {
-                ImageProductBottomSheet(urlImage = offerCardModel.offerImage.orEmpty())
+                ImageProductBottomSheet(urlImage = offerCardModel?.offerImage.orEmpty())
                 Text(
                     buildAnnotatedString {
                         append("Agora você será direcionado para a página do(a) ")
                         withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                            append("${offerCardModel.offerTitle}")
+                            append("${offerCardModel?.offerTitle}")
                         }
                         append(" no app da Shopee. Boas compras!")
                     }
@@ -162,7 +161,9 @@ fun BottomSheetAlert(
 }
 
 @Composable
-fun OfferList(viewModel: ProductViewModel = koinViewModel()) {
+fun OfferList(
+    viewModel: ProductViewModel = koinViewModel(),
+) {
     LaunchedEffect(key1 = Unit) {
         viewModel.dataIntent.send(SearchProductDataIntent.SearchOffersExclusive)
     }
@@ -178,27 +179,33 @@ fun OfferList(viewModel: ProductViewModel = koinViewModel()) {
 
 @Composable
 fun OfferExclusive(
-    viewModel: ProductViewModel = koinViewModel()
+    viewModel: ProductViewModel = koinViewModel(),
 ) {
+    val context = LocalContext.current
+
     when (val list = viewModel.dataStateExclusiveProduct.collectAsState().value) {
         is SearchProductExclusiveDataState.Loading -> {
             ProgressBar(true)
             ListProduct(
-                listProduct = arrayListOf(),
+                listProduct = arrayListOf()
             )
         }
 
         is SearchProductExclusiveDataState.ResponseData -> {
             ProgressBar(false)
             ListProduct(
-                listProduct = list.data,
-            )
+                listProduct = list.data
+            ) {
+                val intent = Intent(context, ProducOfferDetailActivity::class.java)
+                intent.putExtra("offerModel", it)
+                context.startActivity(intent)
+            }
         }
 
         is SearchProductExclusiveDataState.Error -> {
             ProgressBar(true)
             ListProduct(
-                listProduct = arrayListOf(),
+                listProduct = arrayListOf()
             )
         }
 
@@ -209,7 +216,8 @@ fun OfferExclusive(
 @Composable
 fun ListProduct(
     listProduct: List<OfferCardModel>,
-    viewModel: ProductViewModel = koinViewModel()
+    viewModel: ProductViewModel = koinViewModel(),
+    offerDetail: ListenerOfferDetail? = null
 ) {
     val context = LocalContext.current
     val textState = remember {
@@ -238,7 +246,7 @@ fun ListProduct(
         items(
             viewModel.filterOffer(searchText, listProduct)
         ) {
-            OfferCard(offerCardModel = it)
+            OfferCard(offerCardModel = it, offerDetail = offerDetail)
         }
     }
 }
@@ -316,8 +324,10 @@ fun BannerOffer(listener: ListenerBanner) {
 }
 
 @Composable
-fun OfferCard(offerCardModel: OfferCardModel) {
-
+fun OfferCard(
+    offerCardModel: OfferCardModel,
+    offerDetail: ListenerOfferDetail? = null
+) {
     val context = LocalContext.current
     val intent = remember {
         Intent(Intent.ACTION_VIEW, Uri.parse(offerCardModel.urlOffer.orEmpty()))
@@ -380,7 +390,7 @@ fun OfferCard(offerCardModel: OfferCardModel) {
 
             Button(
                 onClick = {
-                    showSheet = true
+                    offerDetail?.onClickOffer(offerCardModel)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -493,6 +503,11 @@ interface ListenerBottomSheet {
 
 fun interface ListenerBanner {
     fun onClickLinkBanner(urlImage: String)
+}
+
+fun interface ListenerOfferDetail {
+
+    fun onClickOffer(offerCardModel: OfferCardModel)
 }
 
 object URL {

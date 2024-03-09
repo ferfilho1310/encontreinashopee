@@ -1,4 +1,4 @@
-package br.com.encontreinashopee.view.autoimageslider
+package br.com.encontreinashopee.util.autoimageslider
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
@@ -94,8 +94,6 @@ object AutoSlide {
                 itemContent(page)
             }
 
-            // you can remove the surface in case you don't want
-            // the transparant bacground
             Surface(
                 modifier = Modifier
                     .padding(bottom = 8.dp)

@@ -20,7 +20,7 @@
         tools:targetApi="31">
 
         <activity
-            android:name=".view.OnboardingOffersActivity"
+            android:name=".view.onboarding.OnboardingOffersActivity"
             android:exported="true"
             android:label="@string/title_activity_onboarding_offers"
             android:screenOrientation="portrait"
@@ -34,7 +34,14 @@
         </activity>
 
         <activity
-            android:name=".view.MainActivity"
+            android:name=".view.productoffer.ProductOfferActivity"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Encontreinashopee" />
+
+        <activity
+            android:name=".view.offerdetails.ProducOfferDetailActivity"
             android:exported="false"
             android:label="@string/app_name"
             android:screenOrientation="portrait"

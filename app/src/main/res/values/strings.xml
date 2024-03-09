@@ -2,4 +2,5 @@
     <string name="app_name">Encontrei na Shoppe</string>
     <string name="title_activity_onboarding_offers">Encontrei na Shoppe</string>
     <string name="default_notification_channel_id">br.com.encontreinashopee</string>
+    <string name="title_activity_produc_offer_detail">ProducOfferDetail</string>
 </resources>
