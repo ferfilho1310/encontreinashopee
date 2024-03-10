@@ -4,4 +4,5 @@ sealed class SearchProductDataIntent {
 
     data object SearchOffersExclusive : SearchProductDataIntent()
 
+
 }
