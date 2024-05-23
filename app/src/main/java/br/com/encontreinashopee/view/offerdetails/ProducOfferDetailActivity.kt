@@ -199,7 +199,7 @@ fun OfferDetail(offerCardModel: OfferCardModel? = null, backStack: (() -> Unit)?
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                        .padding(start = 4.dp, end = 4.dp, bottom = 4.dp),
                     elevation = CardDefaults.cardElevation(
                         defaultElevation = 2.dp
                     ),

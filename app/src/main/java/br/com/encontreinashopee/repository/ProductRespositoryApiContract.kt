@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface ProductRespositoryApiContract {
 
-    fun searchExclusiveOffers() : Flow<ArrayList<OfferCardModel>>
-
-    fun searchOffers() : Flow<ArrayList<OfferCardModel>>
+    fun searchExclusiveOffers(): Flow<ArrayList<OfferCardModel>>
+    fun searchOffers(): Flow<ArrayList<OfferCardModel>>
 }

@@ -1,7 +1,9 @@
 package br.com.encontreinashopee.repository
 
+import android.util.Log
 import br.com.encontreinashopee.model.OfferCardModel
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -9,6 +11,7 @@ import kotlinx.coroutines.flow.callbackFlow
 class ProductRepositoryApi : ProductRespositoryApiContract {
 
     val firebase = FirebaseFirestore.getInstance()
+    val storage = FirebaseStorage.getInstance()
 
     override fun searchExclusiveOffers(): Flow<ArrayList<OfferCardModel>> = callbackFlow {
         val db = firebase
