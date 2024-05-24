@@ -12,10 +12,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -58,7 +56,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
@@ -80,11 +77,8 @@ import br.com.encontreinashopee.model.OfferCardModel
 import br.com.encontreinashopee.state.DataState
 import br.com.encontreinashopee.ui.theme.EncontreinashopeeTheme
 import br.com.encontreinashopee.util.autoimageslider.AutoSlide.AutoSlidingCarousel
-import br.com.encontreinashopee.view.offerdetails.ProducOfferDetailActivity
 import br.com.encontreinashopee.viewmodel.ProductViewModel
 import coil.compose.SubcomposeAsyncImage
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
@@ -189,7 +183,6 @@ fun OfferList(
 fun OfferExclusive(
     viewModel: ProductViewModel = koinViewModel(),
 ) {
-    val context = LocalContext.current
 
     when (val list = viewModel.dataStateExclusiveProduct.collectAsState().value) {
         is DataState.Loading -> {
@@ -203,11 +196,7 @@ fun OfferExclusive(
             ProgressBar(false)
             ListProduct(
                 listProduct = list.data as List<OfferCardModel>
-            ) {
-                val intent = Intent(context, ProducOfferDetailActivity::class.java)
-                intent.putExtra("offerModel", it)
-                context.startActivity(intent)
-            }
+            )
         }
 
         is DataState.Error -> {
@@ -223,8 +212,7 @@ fun OfferExclusive(
 
 @Composable
 fun ListProduct(
-    listProduct: List<OfferCardModel>,
-    offerDetail: ListenerOfferDetail? = null
+    listProduct: List<OfferCardModel>
 ) {
     val context = LocalContext.current
     val textState = remember {
@@ -266,7 +254,7 @@ fun ListProduct(
                 it.offerTitle.orEmpty().contains(searchText, ignoreCase = true)
             }
         ) { model ->
-            OfferCard(offerCardModel = model, offerDetail = offerDetail)
+            OfferCard(offerCardModel = model)
         }
     }
 }
@@ -346,8 +334,7 @@ fun BannerOffer(listener: ListenerBanner) {
 @Composable
 fun OfferCard(
     offerCardModel: OfferCardModel,
-    viewModel: ProductViewModel = koinViewModel(),
-    offerDetail: ListenerOfferDetail? = null
+    viewModel: ProductViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
     val intent = remember {
@@ -420,7 +407,7 @@ fun OfferCard(
                             )
                         )
                     }
-                    offerDetail?.onClickOffer(offerCardModel)
+                    showSheet = true
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -482,20 +469,23 @@ fun shareSheetOffer(context: Context, offerCardModel: OfferCardModel) {
 
 @Composable
 fun ImageProduct(urlImage: String) {
-    val painter = rememberAsyncImagePainter(
-        model = ImageRequest.Builder(LocalContext.current)
-            .crossfade(true)
-            .data(urlImage)
-            .build()
-    )
 
-    Image(
-        painter = painter,
-        contentDescription = "",
+    SubcomposeAsyncImage(
+        model = urlImage,
         modifier = Modifier
             .height(360.dp)
             .fillMaxWidth(),
         contentScale = ContentScale.Crop,
+        contentDescription = "",
+        loading = {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(36.dp))
+            }
+        }
     )
 }
 
@@ -510,7 +500,13 @@ fun ImageProductBottomSheet(urlImage: String) {
         contentScale = ContentScale.Crop,
         contentDescription = "",
         loading = {
-            CircularProgressIndicator()
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(36.dp))
+            }
         }
     )
 }
@@ -544,11 +540,6 @@ interface ListenerBottomSheet {
 
 fun interface ListenerBanner {
     fun onClickLinkBanner(urlImage: String)
-}
-
-fun interface ListenerOfferDetail {
-
-    fun onClickOffer(offerCardModel: OfferCardModel)
 }
 
 object URL {
