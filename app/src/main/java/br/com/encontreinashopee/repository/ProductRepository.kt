@@ -6,6 +6,5 @@ import kotlinx.coroutines.flow.Flow
 interface ProductRepository {
 
     suspend fun searchExclusiveOffersProduct(): Flow<ArrayList<OfferCardModel>>
-
-   suspend fun searchOffersProduct(): Flow<ArrayList<OfferCardModel>>
+    suspend fun searchOffersProduct(): Flow<ArrayList<OfferCardModel>>
 }

@@ -8,6 +8,5 @@ class ProductRepositoryImpl(
 ) : ProductRepository {
 
     override suspend fun searchExclusiveOffersProduct(): Flow<ArrayList<OfferCardModel>> = api.searchExclusiveOffers()
-
     override suspend fun searchOffersProduct(): Flow<ArrayList<OfferCardModel>> = api.searchOffers()
 }

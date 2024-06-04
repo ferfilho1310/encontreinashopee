@@ -4,12 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,12 +20,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -49,6 +51,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,20 +74,18 @@ import br.com.encontreinashopee.R
 import br.com.encontreinashopee.intent.SearchProductDataIntent
 import br.com.encontreinashopee.model.BannerList
 import br.com.encontreinashopee.model.OfferCardModel
-import br.com.encontreinashopee.state.SearchProductExclusiveDataState
+import br.com.encontreinashopee.state.DataState
 import br.com.encontreinashopee.ui.theme.EncontreinashopeeTheme
 import br.com.encontreinashopee.util.autoimageslider.AutoSlide.AutoSlidingCarousel
-import br.com.encontreinashopee.view.offerdetails.ProducOfferDetailActivity
 import br.com.encontreinashopee.viewmodel.ProductViewModel
 import coil.compose.SubcomposeAsyncImage
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.firebase.FirebaseApp
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 class ProductOfferActivity : ComponentActivity() {
@@ -164,6 +165,7 @@ fun BottomSheetAlert(
 fun OfferList(
     viewModel: ProductViewModel = koinViewModel(),
 ) {
+
     LaunchedEffect(key1 = Unit) {
         viewModel.dataIntent.send(SearchProductDataIntent.SearchOffersExclusive)
     }
@@ -181,43 +183,36 @@ fun OfferList(
 fun OfferExclusive(
     viewModel: ProductViewModel = koinViewModel(),
 ) {
-    val context = LocalContext.current
 
     when (val list = viewModel.dataStateExclusiveProduct.collectAsState().value) {
-        is SearchProductExclusiveDataState.Loading -> {
+        is DataState.Loading -> {
             ProgressBar(true)
             ListProduct(
                 listProduct = arrayListOf()
             )
         }
 
-        is SearchProductExclusiveDataState.ResponseData -> {
+        is DataState.ResponseData<*> -> {
             ProgressBar(false)
             ListProduct(
-                listProduct = list.data
-            ) {
-                val intent = Intent(context, ProducOfferDetailActivity::class.java)
-                intent.putExtra("offerModel", it)
-                context.startActivity(intent)
-            }
+                listProduct = list.data as List<OfferCardModel>
+            )
         }
 
-        is SearchProductExclusiveDataState.Error -> {
+        is DataState.Error -> {
             ProgressBar(true)
             ListProduct(
                 listProduct = arrayListOf()
             )
         }
 
-        is SearchProductExclusiveDataState.Inactive -> Unit
+        is DataState.Inactive -> Unit
     }
 }
 
 @Composable
 fun ListProduct(
-    listProduct: List<OfferCardModel>,
-    viewModel: ProductViewModel = koinViewModel(),
-    offerDetail: ListenerOfferDetail? = null
+    listProduct: List<OfferCardModel>
 ) {
     val context = LocalContext.current
     val textState = remember {
@@ -228,25 +223,38 @@ fun ListProduct(
 
     val searchText = textState.value.text
 
-    BannerOffer {
-        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(it))
-        context.startActivity(browserIntent)
-    }
+    LazyColumn {
 
-    Text(
-        text = "Ofertas para você",
-        modifier = Modifier.padding(start = 4.dp, top = 4.dp),
-        fontSize = 16.sp,
-        fontWeight = FontWeight.Bold
-    )
+        item {
+            BannerOffer {
+                try {
+                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(it))
+                    context.startActivity(browserIntent)
+                } catch (ex: Exception) {
+                    Toast.makeText(
+                        context,
+                        "Você não possui o app da Shoppe instalado. Baixe o app e aproveite as ofertas",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
 
-    LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Fixed(2)
-    ) {
+        item {
+            Text(
+                text = "Mais de ${listProduct.size} Ofertas para você...",
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
         items(
-            viewModel.filterOffer(searchText, listProduct)
-        ) {
-            OfferCard(offerCardModel = it, offerDetail = offerDetail)
+            listProduct.filter {
+                it.offerTitle.orEmpty().contains(searchText, ignoreCase = true)
+            }
+        ) { model ->
+            OfferCard(offerCardModel = model)
         }
     }
 }
@@ -266,11 +274,10 @@ fun SearchView(
         },
         Modifier
             .fillMaxWidth()
-            .padding(start = 4.dp, top = 8.dp, bottom = 8.dp, end = 4.dp)
-            .clip(RoundedCornerShape(30.dp))
-            .border(1.dp, Color.DarkGray, RoundedCornerShape(30.dp)),
+            .padding(start = 4.dp, top = 2.dp, bottom = 4.dp, end = 4.dp)
+            .height(50.dp),
         placeholder = {
-            Text(text = placeHolder)
+            Text(text = placeHolder, fontSize = 12.sp)
         },
         trailingIcon = {
             Icon(
@@ -301,7 +308,7 @@ fun BannerOffer(listener: ListenerBanner) {
     ) {
         val listImage = arrayListOf(
             BannerList(img = painterResource(id = R.drawable.banner)),
-            BannerList(img = painterResource(id = R.drawable.comunidade), url = URL.url),
+            BannerList(img = painterResource(id = R.drawable.banner1), url = URL.url),
         )
 
         AutoSlidingCarousel(itemsCount = listImage.size) {
@@ -311,7 +318,8 @@ fun BannerOffer(listener: ListenerBanner) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(White)
-                    .height(150.dp)
+                    .wrapContentHeight()
+                    .height(118.dp)
                     .clickable {
                         if (!listImage[it].url.isNullOrEmpty()) {
                             listener.onClickLinkBanner(listImage[it].url.orEmpty())
@@ -326,12 +334,13 @@ fun BannerOffer(listener: ListenerBanner) {
 @Composable
 fun OfferCard(
     offerCardModel: OfferCardModel,
-    offerDetail: ListenerOfferDetail? = null
+    viewModel: ProductViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
     val intent = remember {
         Intent(Intent.ACTION_VIEW, Uri.parse(offerCardModel.urlOffer.orEmpty()))
     }
+    val coroutineScope = rememberCoroutineScope()
 
     var showSheet by remember { mutableStateOf(false) }
 
@@ -390,7 +399,15 @@ fun OfferCard(
 
             Button(
                 onClick = {
-                    offerDetail?.onClickOffer(offerCardModel)
+                    coroutineScope.launch {
+                        viewModel.dataIntent.send(
+                            SearchProductDataIntent.ClickOffer(
+                                offerCardModel,
+                                context
+                            )
+                        )
+                    }
+                    showSheet = true
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -398,7 +415,12 @@ fun OfferCard(
                 colors = ButtonDefaults.buttonColors(Color(0xFFfa7000)),
                 elevation = ButtonDefaults.buttonElevation(10.dp)
             ) {
-                Text(text = "Saiba Mais", style = TextStyle(color = White))
+                Icon(
+                    imageVector = Icons.Default.Send,
+                    contentDescription = "",
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text(text = "Ir para Oferta", style = TextStyle(color = White))
             }
 
             OutlinedButton(
@@ -412,6 +434,13 @@ fun OfferCard(
                 elevation = ButtonDefaults.buttonElevation(10.dp),
                 border = BorderStroke(1.dp, Color(0xFFfa7000))
             ) {
+                Icon(
+                    imageVector = Icons.Default.Share,
+                    contentDescription = "",
+                    modifier = Modifier.padding(end = 8.dp),
+                    tint = Color(0xFFfa7000)
+                )
+
                 Text(
                     text = "Compartilhar Oferta",
                     style = TextStyle(fontSize = 14.sp, color = Color(0xFFfa7000))
@@ -440,22 +469,24 @@ fun shareSheetOffer(context: Context, offerCardModel: OfferCardModel) {
 
 @Composable
 fun ImageProduct(urlImage: String) {
-    val painter = rememberAsyncImagePainter(
-        model = ImageRequest.Builder(LocalContext.current)
-            .crossfade(true)
-            .data(urlImage)
-            .build()
-    )
 
-    Image(
-        painter = painter,
-        contentDescription = "",
+    SubcomposeAsyncImage(
+        model = urlImage,
         modifier = Modifier
-            .height(165.dp)
+            .height(360.dp)
             .fillMaxWidth(),
         contentScale = ContentScale.Crop,
+        contentDescription = "",
+        loading = {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(36.dp))
+            }
+        }
     )
-
 }
 
 @Composable
@@ -469,7 +500,13 @@ fun ImageProductBottomSheet(urlImage: String) {
         contentScale = ContentScale.Crop,
         contentDescription = "",
         loading = {
-            CircularProgressIndicator()
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(36.dp))
+            }
         }
     )
 }
@@ -503,11 +540,6 @@ interface ListenerBottomSheet {
 
 fun interface ListenerBanner {
     fun onClickLinkBanner(urlImage: String)
-}
-
-fun interface ListenerOfferDetail {
-
-    fun onClickOffer(offerCardModel: OfferCardModel)
 }
 
 object URL {
