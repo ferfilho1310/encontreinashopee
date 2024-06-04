@@ -15,8 +15,8 @@ android {
         applicationId = "br.com.encontreinashopee"
         minSdk = 24
         targetSdk = 34
-        versionCode = 6
-        versionName = "4.2"
+        versionCode = 10
+        versionName = "6.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
