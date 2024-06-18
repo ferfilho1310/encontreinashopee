@@ -27,6 +27,7 @@ class ProductViewModel(
     val dataState = MutableStateFlow<DataState>(DataState.Inactive)
     val dataStateExclusiveProduct =
         MutableStateFlow<DataState>(DataState.Inactive)
+    val dataStateStories = MutableStateFlow<DataState>(DataState.Inactive)
 
     init {
         handleEvents()
@@ -61,6 +62,19 @@ class ProductViewModel(
         tracker.clickOfferTracker(model, context)
     }
 
+    override fun searchStories() {
+        viewModelScope.launch {
+            dataStateStories.value = DataState.Loading
+            repository.searchStoriesOffers()
+                .onEach {
+                    dataStateStories.value =
+                        DataState.ResponseData(it)
+                }.catch {
+                    dataStateStories.value = DataState.Error(it)
+                }.launchIn(viewModelScope)
+        }
+    }
+
     private fun handleEvents() {
         viewModelScope.launch {
             dataIntent.consumeAsFlow().collect {
@@ -69,6 +83,7 @@ class ProductViewModel(
                     is SearchProductDataIntent.ClickOffer -> {
                         clickOffer(it.model, it.context)
                     }
+                    is SearchProductDataIntent.SearchStories -> searchStories()
                 }
             }
         }

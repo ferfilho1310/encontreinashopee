@@ -10,8 +10,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,7 +24,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -57,6 +61,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -66,6 +71,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -74,6 +80,7 @@ import br.com.encontreinashopee.R
 import br.com.encontreinashopee.intent.SearchProductDataIntent
 import br.com.encontreinashopee.model.BannerList
 import br.com.encontreinashopee.model.OfferCardModel
+import br.com.encontreinashopee.model.OfferStoriesModel
 import br.com.encontreinashopee.state.DataState
 import br.com.encontreinashopee.ui.theme.EncontreinashopeeTheme
 import br.com.encontreinashopee.util.autoimageslider.AutoSlide.AutoSlidingCarousel
@@ -97,8 +104,7 @@ class ProductOfferActivity : ComponentActivity() {
             EncontreinashopeeTheme {
                 SetComposableStatusBar(Color(0xFFfa7000))
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFFD3D3D3)
+                    modifier = Modifier.fillMaxSize(), color = Color(0xFFD3D3D3)
                 ) {
                     OfferList()
                 }
@@ -112,6 +118,79 @@ fun SetComposableStatusBar(color: Color) {
     val systemUiController = rememberSystemUiController()
     SideEffect {
         systemUiController.setSystemBarsColor(color)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StoriesBottomSheet(
+    model: OfferStoriesModel,
+    listenerBottomSheet: ListenerBottomSheet? = null
+) {
+    val modalBottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+
+    ModalBottomSheet(
+        onDismissRequest = {
+            listenerBottomSheet?.onDismiss()
+        },
+        sheetState = modalBottomSheetState,
+        dragHandle = {
+            BottomSheetDefaults.DragHandle()
+        },
+    ) {
+
+        Card(
+            modifier = Modifier.padding(2.dp),
+            border = BorderStroke(2.dp, Color(0xFFfa7000))
+        ) {
+            ImageProduct(urlImage = model.urlImage.orEmpty())
+        }
+
+        Column {
+            Text(
+                text = model.titleOffer.orEmpty(),
+                style = TextStyle(color = Black),
+                modifier = Modifier.padding(bottom = 4.dp, top = 8.dp, start = 4.dp),
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+            )
+
+            Row(modifier = Modifier.padding(start = 4.dp, bottom = 8.dp, top = 4.dp )) {
+                Text(
+                    text = "A partir de: ",
+                    fontSize = 15.sp,
+                    style = TextStyle(color = Black)
+                )
+
+                Text(
+                    text = model.priceOffer.orEmpty(),
+                    style = TextStyle(color = Black),
+                    modifier = Modifier,
+                    fontSize = 15.sp,
+                )
+            }
+        }
+
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Button(
+                onClick = {
+                    listenerBottomSheet?.onClickButton()
+                },
+                colors = ButtonDefaults.buttonColors(Color(0xFFfa7000)),
+                modifier = Modifier.padding(bottom = 64.dp),
+            ) {
+                Text(
+                    text = "Ir Para Oferta",
+                    fontSize = 16.sp,
+                    style = TextStyle(color = White)
+                )
+            }
+        }
     }
 }
 
@@ -135,10 +214,15 @@ fun BottomSheetAlert(
         Column {
             Row {
                 ImageProductBottomSheet(urlImage = offerCardModel?.offerImage.orEmpty())
+
                 Text(
                     buildAnnotatedString {
                         append("Agora você será direcionado para a página do(a) ")
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                        withStyle(
+                            style = SpanStyle(
+                                fontWeight = FontWeight.Bold
+                            )
+                        ) {
                             append("${offerCardModel?.offerTitle}")
                         }
                         append(" no app da Shopee. Boas compras!")
@@ -168,6 +252,7 @@ fun OfferList(
 
     LaunchedEffect(key1 = Unit) {
         viewModel.dataIntent.send(SearchProductDataIntent.SearchOffersExclusive)
+        viewModel.dataIntent.send(SearchProductDataIntent.SearchStories)
     }
 
     Column(
@@ -183,7 +268,6 @@ fun OfferList(
 fun OfferExclusive(
     viewModel: ProductViewModel = koinViewModel(),
 ) {
-
     when (val list = viewModel.dataStateExclusiveProduct.collectAsState().value) {
         is DataState.Loading -> {
             ProgressBar(true)
@@ -212,7 +296,7 @@ fun OfferExclusive(
 
 @Composable
 fun ListProduct(
-    listProduct: List<OfferCardModel>
+    listProduct: List<OfferCardModel>,
 ) {
     val context = LocalContext.current
     val textState = remember {
@@ -242,11 +326,15 @@ fun ListProduct(
 
         item {
             Text(
-                text = "Mais de ${listProduct.size} Ofertas para você...",
+                text = "Stories de Ofertas",
                 modifier = Modifier.padding(start = 4.dp, top = 4.dp),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
+        }
+
+        item {
+            SearchStoriesOffers()
         }
 
         items(
@@ -256,6 +344,31 @@ fun ListProduct(
         ) { model ->
             OfferCard(offerCardModel = model)
         }
+    }
+}
+
+@Composable
+fun SearchStoriesOffers(viewModel: ProductViewModel = koinViewModel()) {
+    when (val listStores = viewModel.dataStateStories.collectAsState().value) {
+        is DataState.Loading -> {
+
+        }
+
+        is DataState.ResponseData<*> -> {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                items(listStores.data as List<OfferStoriesModel>) {
+                    Stories(it)
+                }
+            }
+        }
+
+        is DataState.Error -> {
+
+        }
+
+        is DataState.Inactive -> Unit
     }
 }
 
@@ -281,9 +394,7 @@ fun SearchView(
         },
         trailingIcon = {
             Icon(
-                Icons.Default.Search,
-                contentDescription = "",
-                tint = Color.Black
+                Icons.Default.Search, contentDescription = "", tint = Color.Black
             )
         },
         colors = TextFieldDefaults.textFieldColors(
@@ -292,7 +403,7 @@ fun SearchView(
         maxLines = 1,
         singleLine = true,
         textStyle = TextStyle(
-            color = Color.Black, fontSize = 20.sp
+            color = Black, fontSize = 20.sp
         ),
     )
 
@@ -326,6 +437,70 @@ fun BannerOffer(listener: ListenerBanner) {
                         }
                     },
                 contentScale = ContentScale.Crop,
+            )
+        }
+    }
+}
+
+@Composable
+fun Stories(
+    model: OfferStoriesModel
+) {
+    val context = LocalContext.current
+    val intent = remember {
+        Intent(Intent.ACTION_VIEW, Uri.parse(model.urlOffer.orEmpty()))
+    }
+    var showSheet by remember { mutableStateOf(false) }
+
+    if (showSheet) {
+        StoriesBottomSheet(
+            model,
+            object : ListenerBottomSheet {
+                override fun onClickButton() {
+                    context.startActivity(intent)
+                }
+
+                override fun onDismiss() {
+                    showSheet = false
+                }
+            }
+        )
+    }
+
+    Column {
+        SubcomposeAsyncImage(
+            model = model.urlImage,
+            modifier = Modifier
+                .height(100.dp)
+                .width(100.dp)
+                .clip(CircleShape)
+                .border(
+                    BorderStroke(1.dp, Color(0xFFfa7000)),
+                    CircleShape
+                )
+                .clickable {
+                    showSheet = true
+                },
+            contentScale = ContentScale.Crop,
+            contentDescription = "",
+            loading = {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(36.dp))
+                }
+            }
+        )
+        Box(modifier = Modifier.width(110.dp)) {
+            Text(
+                text = model.titleOffer.orEmpty(),
+                color = Color(0xFFfa7000),
+                modifier = Modifier.padding(start = 2.dp, bottom = 8.dp),
+                maxLines = 1,
+                fontSize = 13.sp,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
@@ -402,8 +577,7 @@ fun OfferCard(
                     coroutineScope.launch {
                         viewModel.dataIntent.send(
                             SearchProductDataIntent.ClickOffer(
-                                offerCardModel,
-                                context
+                                offerCardModel, context
                             )
                         )
                     }
@@ -469,7 +643,6 @@ fun shareSheetOffer(context: Context, offerCardModel: OfferCardModel) {
 
 @Composable
 fun ImageProduct(urlImage: String) {
-
     SubcomposeAsyncImage(
         model = urlImage,
         modifier = Modifier
@@ -513,7 +686,6 @@ fun ImageProductBottomSheet(urlImage: String) {
 
 @Composable
 fun ProgressBar(isVisible: Boolean) {
-
     if (isVisible) {
         val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.corujinha))
 
@@ -526,7 +698,8 @@ fun ProgressBar(isVisible: Boolean) {
 
             Text(
                 modifier = Modifier.padding(top = 12.dp),
-                text = "Buscando Ofertas...", color = Color.Black,
+                text = "Buscando Ofertas...",
+                color = Black,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -550,8 +723,7 @@ object URL {
 @Composable
 fun GreetingPreview() {
     EncontreinashopeeTheme {
-        val model =
-            OfferCardModel(offerTitle = "teste", offerPrice = "R$ 120,50")
+        val model = OfferCardModel(offerTitle = "teste", offerPrice = "R$ 120,50")
 
         OfferCard(model)
     }
