@@ -94,15 +94,15 @@ fun OnboardingScreen(navHostController: NavHostController) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(
-            painterResource(R.drawable.icononboarding),
+            painterResource(R.drawable.logo_fundo_branca),
             contentDescription = "",
             contentScale = ContentScale.Crop,
             modifier = Modifier.height(300.dp)
         )
 
         Text(
-            text = "\"Encontrei na Shoppe\" é um aplicativo que vai te ajudar a" +
-                    " encontrar uma variedade de produtos disponíveis na Shoppe." +
+            text = "\"Achadinhos\" é um aplicativo que vai te ajudar a" +
+                    " encontrar uma variedade de produtos disponíveis na Shoppe e produtos importados no AliExpress. " +
                     "Com uma interface intuitiva, você pode encontrar ofertas, promoções e preço baixo," +
                     " além de receber recomendações de compra.",
             modifier = Modifier.padding(24.dp)

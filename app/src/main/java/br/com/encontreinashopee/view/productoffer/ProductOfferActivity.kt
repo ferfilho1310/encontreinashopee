@@ -418,7 +418,7 @@ fun BannerOffer(listener: ListenerBanner) {
             .padding(4.dp)
     ) {
         val listImage = arrayListOf(
-            BannerList(img = painterResource(id = R.drawable.banner)),
+            BannerList(img = painterResource(id = R.drawable.banner_principal)),
             BannerList(img = painterResource(id = R.drawable.banner1), url = URL.url),
         )
 
