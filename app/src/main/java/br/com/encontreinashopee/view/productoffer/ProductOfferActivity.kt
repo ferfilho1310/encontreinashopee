@@ -76,6 +76,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import br.com.encontreinashopee.R
 import br.com.encontreinashopee.intent.SearchProductDataIntent
 import br.com.encontreinashopee.model.BannerList
@@ -91,15 +92,22 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.firebase.FirebaseApp
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+
+const val ID_ADS = "ca-app-pub-2528240545678093/5993578881"
 
 class ProductOfferActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
+
         setContent {
             EncontreinashopeeTheme {
                 SetComposableStatusBar(Color(0xFFfa7000))
@@ -157,7 +165,7 @@ fun StoriesBottomSheet(
                 fontWeight = FontWeight.Bold,
             )
 
-            Row(modifier = Modifier.padding(start = 4.dp, bottom = 8.dp, top = 4.dp )) {
+            Row(modifier = Modifier.padding(start = 4.dp, bottom = 8.dp, top = 4.dp)) {
                 Text(
                     text = "A partir de: ",
                     fontSize = 15.sp,
@@ -307,45 +315,63 @@ fun ListProduct(
 
     val searchText = textState.value.text
 
-    LazyColumn {
-
-        item {
-            BannerOffer {
-                try {
-                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(it))
-                    context.startActivity(browserIntent)
-                } catch (ex: Exception) {
-                    Toast.makeText(
-                        context,
-                        "Você não possui o app da Shoppe instalado. Baixe o app e aproveite as ofertas",
-                        Toast.LENGTH_LONG
-                    ).show()
+    Column(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(Modifier.weight(1f)) {
+            item {
+                BannerOffer {
+                    try {
+                        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(it))
+                        context.startActivity(browserIntent)
+                    } catch (ex: Exception) {
+                        Toast.makeText(
+                            context,
+                            "Você não possui o app da Shoppe instalado. Baixe o app e aproveite as ofertas",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
             }
-        }
 
-        item {
-            Text(
-                text = "Stories de Ofertas",
-                modifier = Modifier.padding(start = 4.dp, top = 4.dp),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        item {
-            SearchStoriesOffers()
-        }
-
-        items(
-            listProduct.filter {
-                it.offerTitle.orEmpty().contains(searchText, ignoreCase = true)
+            item {
+                Text(
+                    text = "Stories de Ofertas",
+                    modifier = Modifier.padding(start = 4.dp, top = 4.dp),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
-        ) { model ->
-            OfferCard(offerCardModel = model)
+
+            item {
+                SearchStoriesOffers()
+            }
+
+            items(
+                listProduct.filter {
+                    it.offerTitle.orEmpty().contains(searchText, ignoreCase = true)
+                }
+            ) { model ->
+                OfferCard(offerCardModel = model)
+            }
         }
+        AdmobBanner()
     }
 }
+
+@Composable
+fun AdmobBanner() {
+    RequestConfiguration.Builder().setTestDeviceIds(listOf("A97486AD8307A1AF98971838FEADBBA1"))
+    AndroidView(
+        modifier = Modifier.fillMaxWidth(),
+        factory = { context ->
+            AdView(context).apply {
+                setAdSize(AdSize.FULL_BANNER)
+                adUnitId = ID_ADS
+                loadAd(AdRequest.Builder().build())
+            }
+        }
+    )
+}
+
 
 @Composable
 fun SearchStoriesOffers(viewModel: ProductViewModel = koinViewModel()) {
