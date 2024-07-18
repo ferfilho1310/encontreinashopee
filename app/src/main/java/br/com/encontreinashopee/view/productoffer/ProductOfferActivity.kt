@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -96,6 +97,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.RequestConfiguration
+import com.google.common.math.IntMath.mod
 import com.google.firebase.FirebaseApp
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -345,12 +347,17 @@ fun ListProduct(
                 SearchStoriesOffers()
             }
 
-            items(
+            itemsIndexed(
                 listProduct.filter {
                     it.offerTitle.orEmpty().contains(searchText, ignoreCase = true)
                 }
-            ) { model ->
-                OfferCard(offerCardModel = model)
+            ) { index, model ->
+                val mod = mod(index, 3)
+                if(mod != 0) {
+                    OfferCard(offerCardModel = model)
+                } else if(index != 0) {
+                    AdmobBanner()
+                }
             }
         }
         AdmobBanner()
