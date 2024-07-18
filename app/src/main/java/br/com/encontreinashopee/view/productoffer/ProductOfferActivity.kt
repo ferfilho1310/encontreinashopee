@@ -356,7 +356,7 @@ fun ListProduct(
                 if(mod != 0) {
                     OfferCard(offerCardModel = model)
                 } else if(index != 0) {
-                    AdmobBanner()
+                    AdmobBanner(AdSize.BANNER)
                 }
             }
         }
@@ -365,13 +365,12 @@ fun ListProduct(
 }
 
 @Composable
-fun AdmobBanner() {
-    RequestConfiguration.Builder().setTestDeviceIds(listOf("A97486AD8307A1AF98971838FEADBBA1"))
+fun AdmobBanner(adSize: AdSize = AdSize.FULL_BANNER) {
     AndroidView(
         modifier = Modifier.fillMaxWidth(),
         factory = { context ->
             AdView(context).apply {
-                setAdSize(AdSize.FULL_BANNER)
+                setAdSize(adSize)
                 adUnitId = ID_ADS
                 loadAd(AdRequest.Builder().build())
             }
