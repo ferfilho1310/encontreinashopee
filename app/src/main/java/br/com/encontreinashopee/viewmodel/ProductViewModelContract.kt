@@ -9,4 +9,5 @@ interface ProductViewModelContract {
     fun searchExclusiveOffers()
     fun clickOffer(model: OfferCardModel, context: Context)
     fun searchStories()
+    fun searchVideoProductOffer()
 }

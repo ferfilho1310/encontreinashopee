@@ -1,5 +1,6 @@
 package br.com.encontreinashopee.view.productoffer
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -59,10 +60,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
+import androidx.compose.ui.graphics.Color.Companion.Gray
+import androidx.compose.ui.graphics.Color.Companion.LightGray
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -78,14 +82,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.common.util.UnstableApi
 import br.com.encontreinashopee.R
 import br.com.encontreinashopee.intent.SearchProductDataIntent
 import br.com.encontreinashopee.model.BannerList
 import br.com.encontreinashopee.model.OfferCardModel
 import br.com.encontreinashopee.model.OfferStoriesModel
+import br.com.encontreinashopee.model.OfferVideoModel
 import br.com.encontreinashopee.state.DataState
 import br.com.encontreinashopee.ui.theme.EncontreinashopeeTheme
 import br.com.encontreinashopee.util.autoimageslider.AutoSlide.AutoSlidingCarousel
+import br.com.encontreinashopee.util.exoplayer.ExoPlayerHelper.CustomPlayer
 import br.com.encontreinashopee.viewmodel.ProductViewModel
 import coil.compose.SubcomposeAsyncImage
 import com.airbnb.lottie.compose.LottieAnimation
@@ -96,7 +103,6 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.RequestConfiguration
 import com.google.common.math.IntMath.mod
 import com.google.firebase.FirebaseApp
 import kotlinx.coroutines.launch
@@ -112,7 +118,7 @@ class ProductOfferActivity : ComponentActivity() {
 
         setContent {
             EncontreinashopeeTheme {
-                SetComposableStatusBar(Color(0xFFfa7000))
+                SetComposableStatusBar(Gray)
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = Color(0xFFD3D3D3)
                 ) {
@@ -259,16 +265,14 @@ fun BottomSheetAlert(
 fun OfferList(
     viewModel: ProductViewModel = koinViewModel(),
 ) {
-
     LaunchedEffect(key1 = Unit) {
-        viewModel.dataIntent.send(SearchProductDataIntent.SearchOffersExclusive)
-        viewModel.dataIntent.send(SearchProductDataIntent.SearchStories)
+        viewModel.dataIntent.send(SearchProductDataIntent.SearchVideoProductOffer)
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFDCDCDC))
+            .background(Gray)
     ) {
         OfferExclusive()
     }
@@ -278,25 +282,25 @@ fun OfferList(
 fun OfferExclusive(
     viewModel: ProductViewModel = koinViewModel(),
 ) {
-    when (val list = viewModel.dataStateExclusiveProduct.collectAsState().value) {
+    when (val list = viewModel.dataOfferVideo.collectAsState().value) {
         is DataState.Loading -> {
             ProgressBar(true)
-            ListProduct(
-                listProduct = arrayListOf()
+            OfferVideoProduct(
+                productVideoList = arrayListOf()
             )
         }
 
         is DataState.ResponseData<*> -> {
             ProgressBar(false)
-            ListProduct(
-                listProduct = list.data as List<OfferCardModel>
+            OfferVideoProduct(
+                productVideoList = list.data as List<OfferVideoModel>
             )
         }
 
         is DataState.Error -> {
             ProgressBar(true)
-            ListProduct(
-                listProduct = arrayListOf()
+            OfferVideoProduct(
+                productVideoList = arrayListOf()
             )
         }
 
@@ -305,17 +309,10 @@ fun OfferExclusive(
 }
 
 @Composable
-fun ListProduct(
-    listProduct: List<OfferCardModel>,
+fun OfferVideoProduct(
+    productVideoList: List<OfferVideoModel>,
 ) {
     val context = LocalContext.current
-    val textState = remember {
-        mutableStateOf(TextFieldValue(""))
-    }
-
-    SearchView(state = textState, placeHolder = "Pequise por Ofertas...")
-
-    val searchText = textState.value.text
 
     Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(Modifier.weight(1f)) {
@@ -335,39 +332,25 @@ fun ListProduct(
             }
 
             item {
-                Text(
-                    text = "Stories de Ofertas",
-                    modifier = Modifier.padding(start = 4.dp, top = 4.dp),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            item {
-                SearchStoriesOffers()
+                AdmobBanner()
             }
 
             itemsIndexed(
-                listProduct.filter {
-                    it.offerTitle.orEmpty().contains(searchText, ignoreCase = true)
-                }
+                productVideoList
             ) { index, model ->
-                val mod = mod(index, 3)
-                if(mod != 0) {
-                    OfferCard(offerCardModel = model)
-                } else if(index != 0) {
-                    AdmobBanner(AdSize.BANNER)
-                }
+                ExoPlayerView(productModel = model)
             }
         }
-        AdmobBanner()
+        AdmobBanner(AdSize.BANNER)
     }
 }
 
 @Composable
-fun AdmobBanner(adSize: AdSize = AdSize.FULL_BANNER) {
+fun AdmobBanner(adSize: AdSize = AdSize.LARGE_BANNER) {
     AndroidView(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
         factory = { context ->
             AdView(context).apply {
                 setAdSize(adSize)
@@ -376,32 +359,6 @@ fun AdmobBanner(adSize: AdSize = AdSize.FULL_BANNER) {
             }
         }
     )
-}
-
-
-@Composable
-fun SearchStoriesOffers(viewModel: ProductViewModel = koinViewModel()) {
-    when (val listStores = viewModel.dataStateStories.collectAsState().value) {
-        is DataState.Loading -> {
-
-        }
-
-        is DataState.ResponseData<*> -> {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                items(listStores.data as List<OfferStoriesModel>) {
-                    Stories(it)
-                }
-            }
-        }
-
-        is DataState.Error -> {
-
-        }
-
-        is DataState.Inactive -> Unit
-    }
 }
 
 
@@ -447,10 +404,9 @@ fun BannerOffer(listener: ListenerBanner) {
     Card(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
-            .padding(4.dp)
+            .padding(top = 8.dp, end = 2.dp, start = 2.dp)
     ) {
         val listImage = arrayListOf(
-            BannerList(img = painterResource(id = R.drawable.banner_principal)),
             BannerList(img = painterResource(id = R.drawable.banner1), url = URL.url),
         )
 
@@ -631,7 +587,7 @@ fun OfferCard(
 
             OutlinedButton(
                 onClick = {
-                    shareSheetOffer(context, offerCardModel)
+                    // shareSheetOffer(context, offerCardModel)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -656,20 +612,95 @@ fun OfferCard(
     }
 }
 
+@SuppressLint("OpaqueUnitKey")
+@androidx.annotation.OptIn(UnstableApi::class)
+@Composable
+fun ExoPlayerView(
+    productModel: OfferVideoModel,
+) {
 
-fun shareSheetOffer(context: Context, offerCardModel: OfferCardModel) {
+    val context = LocalContext.current
+
+    val intent = remember {
+        Intent(Intent.ACTION_VIEW, Uri.parse(productModel.productLinkAffiliate.orEmpty()))
+    }
+
+    Column(
+        modifier = Modifier
+            .padding(top = 2.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .background(Color(0xFF292929))
+    ) {
+
+        Box(contentAlignment = Alignment.TopEnd) {
+            CustomPlayer(productModel.productLinkVideo.orEmpty())
+
+            Column(
+                horizontalAlignment = CenterHorizontally,
+                modifier = Modifier.clickable {
+                    shareSheetOffer(context, productModel)
+                }
+            ) {
+                Icon(
+                    Icons.Default.Share,
+                    contentDescription = "",
+                    tint = White,
+                    modifier = Modifier
+                        .padding(end = 12.dp, top = 24.dp)
+                )
+                Text(
+                    text = "Compartilhar",
+                    style = TextStyle(fontSize = 8.sp, color = White),
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .padding(end = 8.dp)
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .padding(bottom = 8.dp, start = 8.dp, end = 8.dp, top = 8.dp)
+        ) {
+            Text(
+                text = productModel.procutName.orEmpty(),
+                style = TextStyle(fontSize = 16.sp, color = White),
+            )
+
+            Button(
+                onClick = {
+                    context.startActivity(intent)
+                },
+                colors = ButtonDefaults.buttonColors(Color(0xFFffa500)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            ) {
+                Text(
+                    text = "Eu Quero Essa Oferta !",
+                    fontSize = 16.sp,
+                    style = TextStyle(color = White)
+                )
+            }
+        }
+
+    }
+}
+
+
+fun shareSheetOffer(context: Context, model: OfferVideoModel?) {
     val sendIntent: Intent = Intent().apply {
         action = Intent.ACTION_SEND
-        putExtra(Intent.EXTRA_TITLE, "Titulo")
+        putExtra(Intent.EXTRA_TITLE, "Oferta")
         putExtra(
             Intent.EXTRA_TEXT,
-            "Dê uma olhada nesta oferta\n" + offerCardModel.offerTitle + ".\n" + "Clique no link: " + offerCardModel.urlOffer
+            "Dê uma olhada nesta oferta\n" + model?.procutName + ".\n" + "Clique no link: " + model?.productLinkAffiliate
         )
         type = "text/plain"
     }
 
     val shareIntent =
-        Intent.createChooser(sendIntent, "Você está compartilhando: " + offerCardModel.offerTitle)
+        Intent.createChooser(sendIntent, "Você está compartilhando: " + model?.procutName)
     context.startActivity(shareIntent)
 }
 
@@ -743,6 +774,10 @@ interface ListenerBottomSheet {
     fun onDismiss()
 }
 
+fun interface ListenerShare {
+    fun onClickShare(urlAffiliate: String)
+}
+
 fun interface ListenerBanner {
     fun onClickLinkBanner(urlImage: String)
 }
@@ -755,8 +790,6 @@ object URL {
 @Composable
 fun GreetingPreview() {
     EncontreinashopeeTheme {
-        val model = OfferCardModel(offerTitle = "teste", offerPrice = "R$ 120,50")
 
-        OfferCard(model)
     }
 }

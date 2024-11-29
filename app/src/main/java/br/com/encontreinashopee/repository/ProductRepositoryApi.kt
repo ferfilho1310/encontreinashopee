@@ -2,6 +2,7 @@ package br.com.encontreinashopee.repository
 
 import br.com.encontreinashopee.model.OfferCardModel
 import br.com.encontreinashopee.model.OfferStoriesModel
+import br.com.encontreinashopee.model.OfferVideoModel
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.channels.awaitClose
@@ -49,6 +50,21 @@ class ProductRepositoryApi : ProductRespositoryApiContract {
             .addOnSuccessListener {
                 val offerStories = it.map { it.toObject(OfferStoriesModel::class.java) }
                 trySend(offerStories as ArrayList).isSuccess
+            }.addOnFailureListener {
+                trySend(arrayListOf()).isFailure
+            }
+        awaitClose {
+            db.isCanceled
+        }
+    }
+
+    override fun searchVideoProductOffer(): Flow<ArrayList<OfferVideoModel>> = callbackFlow {
+        val db = firebase
+            .collection("offervideo")
+            .get()
+            .addOnSuccessListener {
+                val exclusiveOffersList = it.map { it.toObject(OfferVideoModel::class.java) }
+                trySend(exclusiveOffersList as ArrayList).isSuccess
             }.addOnFailureListener {
                 trySend(arrayListOf()).isFailure
             }

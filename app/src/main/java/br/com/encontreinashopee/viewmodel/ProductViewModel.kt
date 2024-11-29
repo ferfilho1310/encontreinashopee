@@ -28,6 +28,7 @@ class ProductViewModel(
     val dataStateExclusiveProduct =
         MutableStateFlow<DataState>(DataState.Inactive)
     val dataStateStories = MutableStateFlow<DataState>(DataState.Inactive)
+    val dataOfferVideo = MutableStateFlow<DataState>(DataState.Inactive)
 
     init {
         handleEvents()
@@ -75,6 +76,19 @@ class ProductViewModel(
         }
     }
 
+    override fun searchVideoProductOffer() {
+        viewModelScope.launch {
+            dataOfferVideo.value = DataState.Loading
+            repository.searchOfferVideo()
+                .onEach {
+                    dataOfferVideo.value =
+                        DataState.ResponseData(it.sortedByDescending { it.id?.toInt() })
+                }.catch {
+                    dataOfferVideo.value = DataState.Error(it)
+                }.launchIn(viewModelScope)
+        }
+    }
+
     private fun handleEvents() {
         viewModelScope.launch {
             dataIntent.consumeAsFlow().collect {
@@ -84,6 +98,7 @@ class ProductViewModel(
                         clickOffer(it.model, it.context)
                     }
                     is SearchProductDataIntent.SearchStories -> searchStories()
+                    is SearchProductDataIntent.SearchVideoProductOffer -> searchVideoProductOffer()
                 }
             }
         }

@@ -50,10 +50,10 @@ class OnboardingOffersActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             EncontreinashopeeTheme {
-                SetComposableStatusBar(Color(0xFFfa7000))
+                SetComposableStatusBar(Color.Gray)
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = Color.Gray
                 ) {
                     CheckNotificationPolicyAccess()
                     ComposeNavigation()
@@ -120,7 +120,7 @@ fun OnboardingScreen(navHostController: NavHostController) {
             },
             colors = ButtonDefaults.buttonColors(Color(0xFFfa7000)),
         ) {
-            Text(text = "Ver as Ofertas")
+            Text(text = "Ver Ofertas")
         }
     }
 }

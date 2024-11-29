@@ -9,14 +9,15 @@ plugins {
 
 android {
     namespace = "br.com.encontreinashopee"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "br.com.encontreinashopee"
         minSdk = 24
-        targetSdk = 34
-        versionCode = 13
-        versionName = "6.4"
+        //noinspection EditedTargetSdkVersion
+        targetSdk = 35
+        versionCode = 20
+        versionName = "10"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -42,6 +43,7 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -75,13 +77,14 @@ dependencies {
     implementation("io.insert-koin:koin-androidx-compose:3.5.3")
 
     //firebase
-    implementation("com.google.firebase:firebase-crashlytics:19.0.3")
-    implementation("com.google.firebase:firebase-analytics:22.0.2")
-    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("com.google.firebase:firebase-crashlytics:19.2.1")
+    implementation("com.google.firebase:firebase-analytics:22.1.2")
+    implementation("androidx.navigation:navigation-compose:2.8.4")
     implementation("androidx.compose.material3:material3")
-    implementation("com.google.firebase:firebase-storage-ktx:21.0.0")
-    implementation("com.google.firebase:firebase-firestore-ktx:25.0.0")
-    implementation("com.google.android.gms:play-services-ads-lite:23.2.0")
+    implementation("com.google.firebase:firebase-storage-ktx:21.0.1")
+    implementation("com.google.firebase:firebase-firestore-ktx:25.1.1")
+    implementation("com.google.android.gms:play-services-ads-lite:23.5.0")
+    implementation("com.google.firebase:firebase-config:22.0.1")
 
     //test
     testImplementation("junit:junit:4.13.2")
@@ -96,8 +99,8 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.0.1")
 
     //firebase messaging
-    implementation("com.google.firebase:firebase-messaging-ktx:24.0.0")
-    implementation("com.google.firebase:firebase-inappmessaging-display:21.0.0")
+    implementation("com.google.firebase:firebase-messaging-ktx:24.1.0")
+    implementation("com.google.firebase:firebase-inappmessaging-display:21.0.1")
 
     // lottie
     implementation("com.airbnb.android:lottie-compose:4.0.0")
@@ -111,4 +114,14 @@ dependencies {
 
     // Player Youtube
     implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
+
+    implementation ("androidx.compose.ui:ui-viewbinding:1.7.5")
+    implementation ("com.google.android.gms:play-services-ads:23.5.0")
+    implementation ("io.github.farimarwat:admobnative-compose:1.2")
+
+    implementation ("com.google.code.gson:gson:2.11.0")
+
+    //ExoPlayer
+    implementation("androidx.media3:media3-exoplayer:1.5.0")
+    implementation("androidx.media3:media3-ui:1.5.0")
 }
