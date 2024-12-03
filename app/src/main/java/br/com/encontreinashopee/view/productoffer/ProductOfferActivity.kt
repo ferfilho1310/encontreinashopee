@@ -25,8 +25,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -65,8 +63,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.Color.Companion.Gray
-import androidx.compose.ui.graphics.Color.Companion.LightGray
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -103,7 +99,6 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
-import com.google.common.math.IntMath.mod
 import com.google.firebase.FirebaseApp
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -118,9 +113,9 @@ class ProductOfferActivity : ComponentActivity() {
 
         setContent {
             EncontreinashopeeTheme {
-                SetComposableStatusBar(Gray)
+                SetComposableStatusBar(Black)
                 Surface(
-                    modifier = Modifier.fillMaxSize(), color = Color(0xFFD3D3D3)
+                    modifier = Modifier.fillMaxSize(), color = Color.Black
                 ) {
                     OfferList()
                 }
@@ -272,7 +267,7 @@ fun OfferList(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Gray)
+            .background(Black)
     ) {
         OfferExclusive()
     }
@@ -753,7 +748,7 @@ fun ProgressBar(isVisible: Boolean) {
         val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.corujinha))
 
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxSize()
         ) {
@@ -762,7 +757,7 @@ fun ProgressBar(isVisible: Boolean) {
             Text(
                 modifier = Modifier.padding(top = 12.dp),
                 text = "Buscando Ofertas...",
-                color = Black,
+                color = White,
                 fontWeight = FontWeight.Bold
             )
         }

@@ -9,15 +9,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,7 +29,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -45,15 +43,16 @@ import br.com.encontreinashopee.view.productoffer.SetComposableStatusBar
 import br.com.encontreinashopee.view.ui.theme.EncontreinashopeeTheme
 
 class OnboardingOffersActivity : ComponentActivity() {
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             EncontreinashopeeTheme {
-                SetComposableStatusBar(Color.Gray)
+                SetComposableStatusBar(Color.Black)
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color.Gray
+                    color = Color.Black
                 ) {
                     CheckNotificationPolicyAccess()
                     ComposeNavigation()
@@ -86,26 +85,21 @@ fun OnboardingScreen(navHostController: NavHostController) {
     val context = LocalContext.current
     val preferencesManager = remember { PreferencesManager(context) }
 
-    Column(
+    Box(
+        contentAlignment = Alignment.BottomCenter,
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .height(IntrinsicSize.Min)
     ) {
         Image(
-            painterResource(R.drawable.logo_fundo_branca),
+            painterResource(R.drawable.fundo_de_tela_4),
             contentDescription = "",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.height(300.dp)
-        )
-
-        Text(
-            text = "\"Achadinhos\" é um aplicativo que vai te ajudar a" +
-                    " encontrar uma variedade de produtos disponíveis na Shoppe e produtos importados no AliExpress. " +
-                    "Com uma interface intuitiva, você pode encontrar ofertas, promoções e preço baixo," +
-                    " além de receber recomendações de compra.",
-            modifier = Modifier.padding(24.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(),
+            contentScale = ContentScale.FillHeight,
+            alignment = Alignment.CenterEnd,
         )
 
         Button(
@@ -119,8 +113,9 @@ fun OnboardingScreen(navHostController: NavHostController) {
                 preferencesManager.saveData(PREFERENCES_KEY, true)
             },
             colors = ButtonDefaults.buttonColors(Color(0xFFfa7000)),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Ver Ofertas")
+            Text(text = "Ir Para Ofertas")
         }
     }
 }
