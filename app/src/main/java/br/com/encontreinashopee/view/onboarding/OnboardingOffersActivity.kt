@@ -93,7 +93,7 @@ fun OnboardingScreen(navHostController: NavHostController) {
             .height(IntrinsicSize.Min)
     ) {
         Image(
-            painterResource(R.drawable.fundo_de_tela_4),
+            painterResource(R.drawable.fundo_de_tela_5),
             contentDescription = "",
             modifier = Modifier
                 .fillMaxWidth()
