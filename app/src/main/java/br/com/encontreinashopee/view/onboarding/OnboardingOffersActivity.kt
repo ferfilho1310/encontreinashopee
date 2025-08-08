@@ -43,8 +43,8 @@ import br.com.encontreinashopee.view.ScreenNavigationKeys.Key.OFFER_LIST
 import br.com.encontreinashopee.view.ScreenNavigationKeys.Key.ONBOARDING
 import br.com.encontreinashopee.view.ScreenNavigationKeys.Key.PREFERENCES_KEY
 import br.com.encontreinashopee.view.productoffer.OfferList
-import br.com.encontreinashopee.view.productoffer.SetComposableStatusBar
 import br.com.encontreinashopee.view.ui.theme.EncontreinashopeeTheme
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 class OnboardingOffersActivity : ComponentActivity() {
 
@@ -67,6 +67,14 @@ class OnboardingOffersActivity : ComponentActivity() {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun SetComposableStatusBar(color: Color) {
+    val systemUiController = rememberSystemUiController()
+    SideEffect {
+        systemUiController.setSystemBarsColor(color)
     }
 }
 

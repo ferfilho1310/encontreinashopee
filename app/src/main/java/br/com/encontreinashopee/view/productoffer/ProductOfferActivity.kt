@@ -2,13 +2,11 @@ package br.com.encontreinashopee.view.productoffer
 
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,14 +22,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,16 +36,13 @@ import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
-import androidx.core.view.WindowCompat
 import br.com.encontreinashopee.R
 import br.com.encontreinashopee.intent.SearchOffersDataIntent
 import br.com.encontreinashopee.model.BannerList
@@ -64,44 +57,10 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
-import com.google.firebase.FirebaseApp
 import org.koin.androidx.compose.koinViewModel
-
-class ProductOfferActivity : ComponentActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        super.onCreate(savedInstanceState)
-        FirebaseApp.initializeApp(this)
-
-        setContent {
-            CompositionLocalProvider(
-                LocalLayoutDirection provides LayoutDirection.Ltr
-            ) {
-                EncontreinashopeeTheme {
-                    SetComposableStatusBar(Black)
-                    Surface(
-                        modifier = Modifier.fillMaxSize(), color = Color.Black
-                    ) {
-                        OfferList()
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun SetComposableStatusBar(color: Color) {
-    val systemUiController = rememberSystemUiController()
-    SideEffect {
-        systemUiController.setSystemBarsColor(color)
-    }
-}
 
 @Composable
 fun OfferList(
@@ -118,6 +77,112 @@ fun OfferList(
             .background(Black)
     ) {
         SearchOffers()
+    }
+}
+
+@Composable
+fun SearchOffers(viewModel: ProductViewModel = koinViewModel()) {
+
+    val state = viewModel.dataState.collectAsState().value
+    when (state) {
+        is DataState.Loading -> ProgressBar(true)
+        is DataState.ResponseData<*> -> {
+            ListOffers(state.data as List<OfferCardModel>)
+        }
+
+        is DataState.Error -> Unit
+    }
+}
+
+@Composable
+fun ListOffers(products: List<OfferCardModel>) {
+    val context = LocalContext.current
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            items(products.size) { index ->
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(6.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = White
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Image(
+                            painter = rememberImagePainter(data = products[index].offerImage),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(150.dp)
+                                .padding(end = 16.dp),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 8.dp)
+                        ) {
+                            Text(
+                                text = products[index].offerTitle.orEmpty(),
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 16.sp,
+                                color = Black
+                            )
+                            Text(
+                                text = products[index].offerPrice.orEmpty(),
+                                color = Color(0xFFFF6600),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+
+                            Button(
+                                onClick = {
+                                    val intent =
+                                        Intent(
+                                            Intent.ACTION_VIEW,
+                                            products[index].urlOffer.orEmpty().toUri()
+                                        )
+                                    context.startActivity(intent)
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(
+                                        0xFFFF6600
+                                    )
+                                ),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .fillMaxWidth()
+                                    .align(Alignment.End)
+                            ) {
+                                Text(text = "Ver Oferta na Shopee", color = White)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            AdmobBanner()
+        }
     }
 }
 
@@ -143,7 +208,7 @@ fun BannerOffer(listener: ListenerBanner) {
     Card(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
-            .padding(top = 8.dp, end = 2.dp, start = 2.dp)
+            .padding(top = 8.dp, end = 2.dp, start = 2.dp, bottom = 8.dp)
     ) {
         val listImage = arrayListOf(
             BannerList(img = painterResource(id = R.drawable.banner1)),
@@ -166,103 +231,6 @@ fun BannerOffer(listener: ListenerBanner) {
                 contentScale = ContentScale.Crop,
             )
         }
-    }
-}
-
-@Composable
-fun SearchOffers(viewModel: ProductViewModel = koinViewModel()) {
-
-    val state = viewModel.dataState.collectAsState().value
-    when (state) {
-        is DataState.Loading -> ProgressBar(true)
-        is DataState.ResponseData<*> -> {
-            ListOffers(state.data as List<OfferCardModel>)
-        }
-
-        is DataState.Error -> Unit
-    }
-}
-
-@Composable
-fun ListOffers(products: List<OfferCardModel>) {
-    val context = LocalContext.current
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-
-        BannerOffer {
-
-        }
-
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(products.size) { index ->
-                val product = products[index]
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(6.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Image(
-                            painter = rememberImagePainter(data = product.offerImage),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(80.dp)
-                                .padding(end = 16.dp),
-                            contentScale = ContentScale.Crop
-                        )
-
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 8.dp)
-                        ) {
-                            Text(
-                                text = product.offerTitle.orEmpty(),
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 16.sp,
-                                color = Black
-                            )
-                            Text(
-                                text = product.offerPrice.orEmpty(),
-                                color = Color(0xFFFF6600),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(vertical = 4.dp)
-                            )
-                            Button(
-                                onClick = {
-                                    val intent =
-                                        Intent(
-                                            Intent.ACTION_VIEW,
-                                            product.urlOffer.orEmpty().toUri()
-                                        )
-                                    context.startActivity(intent)
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(
-                                        0xFFFF6600
-                                    )
-                                ),
-                                shape = RoundedCornerShape(8.dp),
-                                modifier = Modifier.height(40.dp)
-                            ) {
-                                Text(text = "Ver Oferta", color = White)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        AdmobBanner()
     }
 }
 
@@ -323,7 +291,6 @@ fun GreetingPreview() {
                 offerImage = "https://link-da-imagem-1.jpg",
                 urlOffer = "https://site-do-produto-1.com",
                 id = 1,
-                description = ""
             ),
             OfferCardModel(
                 offerTitle = "Smart TV 4K",
@@ -331,7 +298,6 @@ fun GreetingPreview() {
                 offerImage = "https://link-da-imagem-1.jpg",
                 urlOffer = "https://site-do-produto-1.com",
                 id = 2,
-                description = ""
             ),
             OfferCardModel(
                 offerTitle = "Smart TV 4K",
@@ -339,15 +305,13 @@ fun GreetingPreview() {
                 offerImage = "https://link-da-imagem-1.jpg",
                 urlOffer = "https://site-do-produto-1.com",
                 id = 3,
-                description = ""
             ),
             OfferCardModel(
                 offerTitle = "Smart TV 4K",
                 offerPrice = "$499.99",
                 offerImage = "https://link-da-imagem-1.jpg",
                 urlOffer = "https://site-do-produto-1.com",
-                id = 4,
-                description = ""
+                id = 4
             )
         )
 

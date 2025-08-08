@@ -3,6 +3,7 @@ package br.com.encontreinashopee.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.encontreinashopee.intent.SearchOffersDataIntent
+import br.com.encontreinashopee.model.OfferCardModel
 import br.com.encontreinashopee.repository.ProductRepository
 import br.com.encontreinashopee.state.DataState
 import kotlinx.coroutines.channels.Channel
@@ -20,6 +21,8 @@ class ProductViewModel(
     private val _dataState = MutableStateFlow<DataState>(DataState.Loading)
     val dataState: StateFlow<DataState> = _dataState
 
+    private var cache: List<OfferCardModel>? = null
+
     init {
         handleEvents()
     }
@@ -35,12 +38,18 @@ class ProductViewModel(
     }
 
     private fun searchOffers() {
+        if (cache != null) {
+            _dataState.value = DataState.ResponseData(cache)
+            return
+        }
+
         viewModelScope.launch {
             _dataState.value = DataState.Loading
             repository.getOffers()
                 .catch {
                     _dataState.value = DataState.Error("Error: " + it.message)
                 }.collect {
+                    cache = it
                     _dataState.value = DataState.ResponseData(it.sortedByDescending { it.id })
                 }
         }

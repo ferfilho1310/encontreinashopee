@@ -69,6 +69,8 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.2.0-beta02")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.35.0-alpha")
     implementation("com.google.accompanist:accompanist-pager:0.22.0-rc")
+    implementation("androidx.compose.material:material:1.5.0")
+    implementation ("androidx.compose.ui:ui-viewbinding:1.7.5")
 
     //coil
     implementation("io.coil-kt:coil-compose:2.5.0")
@@ -85,7 +87,6 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("com.google.firebase:firebase-storage-ktx:21.0.1")
     implementation("com.google.firebase:firebase-firestore-ktx:25.1.1")
-    implementation("com.google.android.gms:play-services-ads-lite:23.5.0")
     implementation("com.google.firebase:firebase-config:22.0.1")
 
     //test
@@ -117,9 +118,8 @@ dependencies {
     // Player Youtube
     implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
 
-    implementation ("androidx.compose.ui:ui-viewbinding:1.7.5")
-    implementation ("com.google.android.gms:play-services-ads:23.5.0")
-    implementation ("io.github.farimarwat:admobnative-compose:1.2")
+   //Ads
+    implementation ("com.google.android.gms:play-services-ads:23.0.0")
 
     //Gson
     implementation ("com.google.code.gson:gson:2.11.0")

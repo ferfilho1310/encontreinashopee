@@ -12,7 +12,7 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import br.com.encontreinashopee.R
-import br.com.encontreinashopee.view.productoffer.ProductOfferActivity
+import br.com.encontreinashopee.view.onboarding.OnboardingOffersActivity
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
@@ -31,7 +31,7 @@ class ProductOffersMessaging : FirebaseMessagingService() {
     }
 
     private fun sendNotification(message: RemoteMessage) {
-        val intent = Intent(this, ProductOfferActivity::class.java).apply {
+        val intent = Intent(this, OnboardingOffersActivity::class.java).apply {
             addFlags(FLAG_ACTIVITY_CLEAR_TOP)
         }
 

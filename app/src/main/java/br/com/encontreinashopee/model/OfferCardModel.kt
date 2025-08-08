@@ -7,15 +7,13 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class OfferCardModel(
     @SerializedName("id")
-    val id: Int,
+    val id: Int?,
     @SerializedName("offerImage")
-    val offerImage: String,
+    val offerImage: String?,
     @SerializedName("offerTitle")
-    val offerTitle: String,
+    val offerTitle: String?,
     @SerializedName("urlOffer")
-    val urlOffer: String,
+    val urlOffer: String?,
     @SerializedName("offerPrice")
-    val offerPrice: String,
-    @SerializedName("description")
-    val description: String
+    val offerPrice: String?
 ) : Parcelable
