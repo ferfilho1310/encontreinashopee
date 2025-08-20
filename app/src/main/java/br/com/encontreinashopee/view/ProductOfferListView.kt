@@ -1,6 +1,5 @@
-package br.com.encontreinashopee.view.productoffer
+package br.com.encontreinashopee.view
 
-import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,10 +17,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
+import androidx.navigation.NavHostController
 import br.com.encontreinashopee.R
 import br.com.encontreinashopee.intent.SearchOffersDataIntent
 import br.com.encontreinashopee.model.BannerList
@@ -65,29 +68,18 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun OfferList(
     viewModel: ProductViewModel = koinViewModel(),
+    navHostController: NavHostController
 ) {
     LaunchedEffect(key1 = Unit) {
         viewModel.dataIntent.send(SearchOffersDataIntent.SearchOffers)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .safeDrawingPadding()
-            .background(Black)
-    ) {
-        SearchOffers()
-    }
-}
-
-@Composable
-fun SearchOffers(viewModel: ProductViewModel = koinViewModel()) {
-
     val state = viewModel.dataState.collectAsState().value
+
     when (state) {
-        is DataState.Loading -> ProgressBar(true)
+        is DataState.Loading -> ProgressBar(true, "Buscando Ofertas...")
         is DataState.ResponseData<*> -> {
-            ListOffers(state.data as List<OfferCardModel>)
+            ListOffers(state.data as List<OfferCardModel>, navHostController)
         }
 
         is DataState.Error -> Unit
@@ -95,16 +87,41 @@ fun SearchOffers(viewModel: ProductViewModel = koinViewModel()) {
 }
 
 @Composable
-fun ListOffers(products: List<OfferCardModel>) {
+fun ListOffers(products: List<OfferCardModel>, navHostController: NavHostController? = null) {
     val context = LocalContext.current
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .safeDrawingPadding()
+            .background(Color.LightGray)
     ) {
+        Column(
+            modifier = Modifier
+                .align(Alignment.Start)
+                .padding(end = 8.dp, top = 8.dp, bottom = 8.dp, start = 12.dp)
+                .clickable {
+                    navHostController?.navigate(ScreenNavigationKeys.Key.CUPOMS)
+                },
+            verticalArrangement = Arrangement.Center, // centraliza no eixo Y
+            horizontalAlignment = CenterHorizontally // centraliza no eixo X
+        ) {
+            Icon(
+                modifier = Modifier
+                    .size(30.dp),
+                tint = Color(0xFFFF6600),
+                imageVector = Icons.Filled.ConfirmationNumber,
+                contentDescription = "Voltar"
+            )
+
+            Text("Cupons", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        }
+
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 8.dp)
         ) {
             items(products.size) { index ->
                 Card(
@@ -234,24 +251,8 @@ fun BannerOffer(listener: ListenerBanner) {
     }
 }
 
-private fun shareSheetOffer(context: Context, model: OfferCardModel?) {
-    val sendIntent: Intent = Intent().apply {
-        action = Intent.ACTION_SEND
-        putExtra(Intent.EXTRA_TITLE, "Oferta")
-        putExtra(
-            Intent.EXTRA_TEXT,
-            "Dê uma olhada nesta oferta\n" + model?.offerTitle + ".\n" + "Clique no link: " + model?.urlOffer
-        )
-        type = "text/plain"
-    }
-
-    val shareIntent =
-        Intent.createChooser(sendIntent, "Você está compartilhando: " + model?.offerTitle)
-    context.startActivity(shareIntent)
-}
-
 @Composable
-fun ProgressBar(isVisible: Boolean) {
+fun ProgressBar(isVisible: Boolean, progressTitle: String) {
     if (isVisible) {
         val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.corujinha))
 
@@ -264,16 +265,12 @@ fun ProgressBar(isVisible: Boolean) {
 
             Text(
                 modifier = Modifier.padding(top = 12.dp),
-                text = "Buscando Ofertas...",
+                text = progressTitle,
                 color = White,
                 fontWeight = FontWeight.Bold
             )
         }
     }
-}
-
-fun interface ListenerShared {
-    fun onClickShare(urlAffiliate: String)
 }
 
 fun interface ListenerBanner {

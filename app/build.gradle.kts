@@ -16,8 +16,8 @@ android {
         minSdk = 24
         //noinspection EditedTargetSdkVersion
         targetSdk = 35
-        versionCode = 21
-        versionName = "10.1"
+        versionCode = 23
+        versionName = "11.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -57,80 +57,77 @@ android {
 
 dependencies {
 
+    // Core
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
     implementation("androidx.activity:activity-compose:1.9.0")
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
+// Compose BOM (resolve versões das libs Compose automaticamente)
     implementation(platform("androidx.compose:compose-bom:2025.06.00"))
-    implementation("androidx.navigation:navigation-compose:2.8.4")
-    implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3:1.2.0-beta02")
-    implementation("com.google.accompanist:accompanist-systemuicontroller:0.35.0-alpha")
-    implementation("com.google.accompanist:accompanist-pager:0.22.0-rc")
-    implementation("androidx.compose.material:material:1.5.0")
-    implementation ("androidx.compose.ui:ui-viewbinding:1.7.5")
+    implementation("androidx.compose.ui:ui-viewbinding")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material")
+    implementation("androidx.compose.material:material-icons-extended")
 
-    //coil
+// Navigation
+    implementation("androidx.navigation:navigation-compose:2.8.4")
+
+// Accompanist
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.35.0-alpha")
+    implementation("com.google.accompanist:accompanist-permissions:0.30.1")
+// ⚠️ Versão antiga do pager (0.22.0-rc) — ideal atualizar para mesma linha 0.35.0
+    implementation("com.google.accompanist:accompanist-pager:0.22.0-rc")
+
+// Image loading
     implementation("io.coil-kt:coil-compose:2.5.0")
 
-    //koin
+// DI (Koin)
     implementation("io.insert-koin:koin-core:3.5.3")
     implementation("io.insert-koin:koin-android:3.5.3")
     implementation("io.insert-koin:koin-androidx-compose:3.5.3")
 
-    //firebase
+// Firebase
     implementation("com.google.firebase:firebase-crashlytics:19.2.1")
     implementation("com.google.firebase:firebase-analytics:22.1.2")
-    implementation("androidx.navigation:navigation-compose:2.8.4")
-    implementation("androidx.compose.material3:material3")
     implementation("com.google.firebase:firebase-storage-ktx:21.0.1")
     implementation("com.google.firebase:firebase-firestore-ktx:25.1.1")
     implementation("com.google.firebase:firebase-config:22.0.1")
-
-    //test
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
-
-    //splash
-    implementation("androidx.core:core-splashscreen:1.0.1")
-
-    //firebase messaging
     implementation("com.google.firebase:firebase-messaging-ktx:24.1.0")
     implementation("com.google.firebase:firebase-inappmessaging-display:21.0.1")
 
-    // lottie
-    implementation("com.airbnb.android:lottie-compose:4.0.0")
-
-    // notification permission
-    implementation("com.google.accompanist:accompanist-permissions:0.30.1")
-
-    // Moshi
-    implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
-    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.13.0")
-
-    // Player Youtube
-    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
-
-   //Ads
-    implementation ("com.google.android.gms:play-services-ads:23.0.0")
-
-    //Gson
-    implementation ("com.google.code.gson:gson:2.11.0")
-
-    //ExoPlayer
-    implementation("androidx.media3:media3-exoplayer:1.5.0")
-    implementation("androidx.media3:media3-ui:1.5.0")
-
-    //Retrofit
+// Network
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+
+// JSON
+    implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.14.0") // corrigido para mesma versão
+    implementation("com.google.code.gson:gson:2.11.0")
+
+// Ads
+    implementation("com.google.android.gms:play-services-ads:23.0.0")
+
+// Media
+    implementation("androidx.media3:media3-exoplayer:1.5.0")
+    implementation("androidx.media3:media3-ui:1.5.0")
+    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
+
+// Animations
+    implementation("com.airbnb.android:lottie-compose:4.0.0")
+
+// Test
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation(platform("androidx.compose:compose-bom:2025.06.00"))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+
 }

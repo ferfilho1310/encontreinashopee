@@ -1,7 +1,7 @@
-package br.com.encontreinashopee.repository
+package br.com.encontreinashopee.repository.products
 
 import br.com.encontreinashopee.model.OfferCardModel
-import br.com.encontreinashopee.repository.ProductRepositoryApi.KEY.OFFERS
+import br.com.encontreinashopee.repository.products.ProductRepositoryApi.KEY.OFFERS
 import retrofit2.http.GET
 
 interface ProductRepositoryApi  {

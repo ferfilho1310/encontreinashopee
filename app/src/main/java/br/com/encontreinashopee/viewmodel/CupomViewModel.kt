@@ -2,9 +2,8 @@ package br.com.encontreinashopee.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import br.com.encontreinashopee.intent.SearchOffersDataIntent
-import br.com.encontreinashopee.model.OfferCardModel
-import br.com.encontreinashopee.repository.products.ProductRepository
+import br.com.encontreinashopee.intent.SearchCupomsIntent
+import br.com.encontreinashopee.repository.cupoms.CupomRepository
 import br.com.encontreinashopee.state.DataState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,44 +12,36 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 
-class ProductViewModel(
-    private val repository: ProductRepository,
+class CupomViewModel(
+    val repository: CupomRepository
 ) : ViewModel() {
 
-    val dataIntent = Channel<SearchOffersDataIntent>(Channel.UNLIMITED)
+    val dataIntent = Channel<SearchCupomsIntent>(Channel.UNLIMITED)
     private val _dataState = MutableStateFlow<DataState>(DataState.Loading)
     val dataState: StateFlow<DataState> = _dataState
 
-    private var cache: List<OfferCardModel>? = null
-
     init {
-        handleEvents()
+        handleIntent()
     }
 
-    private fun handleEvents() {
+    private fun handleIntent() {
         viewModelScope.launch {
             dataIntent.consumeAsFlow().collect {
                 when (it) {
-                    is SearchOffersDataIntent.SearchOffers -> searchOffers()
+                    is SearchCupomsIntent.SearchCupoms -> loadCupoms()
                 }
             }
         }
     }
 
-    private fun searchOffers() {
-        if (cache != null) {
-            _dataState.value = DataState.ResponseData(cache)
-            return
-        }
-
+    private fun loadCupoms() {
         viewModelScope.launch {
             _dataState.value = DataState.Loading
-            repository.getOffers()
+            repository.getCupoms()
                 .catch {
-                    _dataState.value = DataState.Error("Error: " + it.message)
+                    _dataState.value = DataState.Error(it.message)
                 }.collect {
-                    cache = it
-                    _dataState.value = DataState.ResponseData(it.sortedByDescending { it.id })
+                    _dataState.value = DataState.ResponseData(it)
                 }
         }
     }

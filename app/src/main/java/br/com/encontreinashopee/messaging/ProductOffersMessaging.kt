@@ -12,7 +12,7 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import br.com.encontreinashopee.R
-import br.com.encontreinashopee.view.onboarding.OnboardingOffersActivity
+import br.com.encontreinashopee.view.OnboardingOffersActivity
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 

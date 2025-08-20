@@ -1,4 +1,4 @@
-package br.com.encontreinashopee.repository
+package br.com.encontreinashopee.repository.products
 
 import br.com.encontreinashopee.model.OfferCardModel
 import kotlinx.coroutines.flow.Flow

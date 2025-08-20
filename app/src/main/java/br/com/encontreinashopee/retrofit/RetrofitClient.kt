@@ -1,5 +1,6 @@
 package br.com.encontreinashopee.retrofit
 
+import br.com.encontreinashopee.util.UrlJson
 import com.google.gson.GsonBuilder
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -7,7 +8,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
-    private fun getRetrofit(baseUrl: String): Retrofit {
+    val baseUrl = UrlJson.URL
+
+    private fun getRetrofit(): Retrofit {
         val gson = GsonBuilder()
             .setLenient()
             .create()
@@ -18,7 +21,7 @@ object RetrofitClient {
             .build()
     }
 
-    internal inline fun <reified T> createService(baseUrl: String): T {
-        return getRetrofit(baseUrl).create(T::class.java)
+    internal inline fun <reified T> createService(): T {
+        return getRetrofit().create(T::class.java)
     }
 }

@@ -1,4 +1,4 @@
-package br.com.encontreinashopee.view.onboarding
+package br.com.encontreinashopee.view
 
 import android.Manifest
 import android.os.Build
@@ -39,10 +39,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import br.com.encontreinashopee.R
 import br.com.encontreinashopee.util.PreferencesManager
+import br.com.encontreinashopee.view.ScreenNavigationKeys.Key.CUPOMS
 import br.com.encontreinashopee.view.ScreenNavigationKeys.Key.OFFER_LIST
 import br.com.encontreinashopee.view.ScreenNavigationKeys.Key.ONBOARDING
 import br.com.encontreinashopee.view.ScreenNavigationKeys.Key.PREFERENCES_KEY
-import br.com.encontreinashopee.view.productoffer.OfferList
 import br.com.encontreinashopee.view.ui.theme.EncontreinashopeeTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
@@ -56,10 +56,10 @@ class OnboardingOffersActivity : ComponentActivity() {
                 LocalLayoutDirection provides LayoutDirection.Ltr
             ) {
                 EncontreinashopeeTheme {
-                    SetComposableStatusBar(Color.Black)
+                    SetComposableStatusBar(Color.LightGray)
                     Surface(
                         modifier = Modifier.fillMaxSize(),
-                        color = Color.Black
+                        color = Color.LightGray
                     ) {
                         CheckNotificationPolicyAccess()
                         ComposeNavigation()
@@ -147,13 +147,16 @@ fun ComposeNavigation() {
         composable(ONBOARDING) {
             val preferences = preferencesManager.getData(PREFERENCES_KEY, false)
             if (preferences) {
-                OfferList()
+                OfferList(navHostController = navController)
             } else {
                 OnboardingScreen(navHostController = navController)
             }
         }
         composable(OFFER_LIST) {
-            OfferList()
+            OfferList(navHostController = navController)
+        }
+        composable(CUPOMS) {
+            LoadCupoms(navController = navController)
         }
     }
 }
