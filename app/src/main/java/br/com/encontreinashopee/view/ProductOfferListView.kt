@@ -1,5 +1,6 @@
 package br.com.encontreinashopee.view
 
+import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -7,7 +8,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,12 +21,17 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,7 +47,9 @@ import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,6 +65,7 @@ import br.com.encontreinashopee.ui.theme.EncontreinashopeeTheme
 import br.com.encontreinashopee.util.AdvertasingIds
 import br.com.encontreinashopee.util.autoimageslider.AutoSlide.AutoSlidingCarousel
 import br.com.encontreinashopee.viewmodel.ProductViewModel
+import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -70,6 +81,9 @@ fun OfferList(
     viewModel: ProductViewModel = koinViewModel(),
     navHostController: NavHostController
 ) {
+    val context = LocalContext.current
+    ChangeColorNavBar(statusBarColor = White, navBarColor = Black, darkIcon = true)
+
     LaunchedEffect(key1 = Unit) {
         viewModel.dataIntent.send(SearchOffersDataIntent.SearchOffers)
     }
@@ -79,126 +93,163 @@ fun OfferList(
     when (state) {
         is DataState.Loading -> ProgressBar(true, "Buscando Ofertas...")
         is DataState.ResponseData<*> -> {
-            ListOffers(state.data as List<OfferCardModel>, navHostController)
+            ListOffers(state.data as List<OfferCardModel>, navHostController) { offerCardModel ->
+                navegateToOffer(offerCardModel.urlOffer, context)
+                viewModel.onClickOffer(offerCardModel)
+            }
         }
 
         is DataState.Error -> Unit
     }
 }
 
-@Composable
-fun ListOffers(products: List<OfferCardModel>, navHostController: NavHostController? = null) {
-    val context = LocalContext.current
+private fun navegateToOffer(urlOffer: String?, context: Context) {
 
-    Column(
+    val intent = Intent(
+        Intent.ACTION_VIEW,
+        urlOffer.orEmpty().toUri()
+    )
+    context.startActivity(intent)
+}
+
+@Composable
+fun ListOffers(
+    products: List<OfferCardModel>,
+    navHostController: NavHostController? = null,
+    listener: ListenerOffer? = null
+) {
+
+    Scaffold(
         modifier = Modifier
-            .fillMaxSize()
             .safeDrawingPadding()
-            .background(Color.LightGray)
-    ) {
-        Column(
-            modifier = Modifier
-                .align(Alignment.Start)
-                .padding(end = 8.dp, top = 8.dp, bottom = 8.dp, start = 12.dp)
-                .clickable {
+            .background(Color.LightGray),
+        topBar = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+                        text = "Ofertas para Você",
+                        style = TextStyle(
+                            color = Black
+                        ),
+                        fontWeight = Bold,
+                        fontSize = 18.sp
+                    )
+                }
+            }
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
                     navHostController?.navigate(ScreenNavigationKeys.Key.CUPOMS)
                 },
-            verticalArrangement = Arrangement.Center, // centraliza no eixo Y
-            horizontalAlignment = CenterHorizontally // centraliza no eixo X
-        ) {
-            Icon(
-                modifier = Modifier
-                    .size(30.dp),
-                tint = Color(0xFFFF6600),
-                imageVector = Icons.Filled.ConfirmationNumber,
-                contentDescription = "Voltar"
-            )
-
-            Text("Cupons", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-        }
-
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 8.dp)
-        ) {
-            items(products.size) { index ->
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(6.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = White
-                    )
+                containerColor = White
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(end = 8.dp, top = 8.dp, bottom = 8.dp, start = 8.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = CenterHorizontally
                 ) {
-                    Row(
+                    Icon(
                         modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Image(
-                            painter = rememberImagePainter(data = products[index].offerImage),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(150.dp)
-                                .padding(end = 16.dp),
-                            contentScale = ContentScale.Crop
+                            .size(30.dp),
+                        tint = Color(0xFFFF6600),
+                        imageVector = Icons.Filled.ConfirmationNumber,
+                        contentDescription = "Voltar"
+                    )
+
+                    Text("Cupons", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        },
+        floatingActionButtonPosition = FabPosition.End,
+        bottomBar = {
+            AdmobBanner()
+        }
+    ) { innerPadding ->
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .weight(1f),
+                contentPadding = PaddingValues(vertical = 16.dp, horizontal = 8.dp)
+            ) {
+                items(products.size) { index ->
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        elevation = CardDefaults.cardElevation(6.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = White
                         )
-
-                        Column(
+                    ) {
+                        Row(
                             modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 8.dp)
+                                .padding(16.dp)
+                                .fillMaxWidth()
                         ) {
-                            Text(
-                                text = products[index].offerTitle.orEmpty(),
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 16.sp,
-                                color = Black
-                            )
-                            Text(
-                                text = products[index].offerPrice.orEmpty(),
-                                color = Color(0xFFFF6600),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(vertical = 4.dp)
+                            AsyncImage(
+                                model = products[index].offerImage,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(150.dp)
+                                    .padding(end = 16.dp),
+                                contentScale = ContentScale.Crop
                             )
 
-                            Button(
-                                onClick = {
-                                    val intent =
-                                        Intent(
-                                            Intent.ACTION_VIEW,
-                                            products[index].urlOffer.orEmpty().toUri()
-                                        )
-                                    context.startActivity(intent)
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(
-                                        0xFFFF6600
-                                    )
-                                ),
-                                shape = RoundedCornerShape(8.dp),
+                            Column(
                                 modifier = Modifier
-                                    .height(40.dp)
-                                    .fillMaxWidth()
-                                    .align(Alignment.End)
+                                    .weight(1f)
+                                    .padding(end = 8.dp)
                             ) {
-                                Text(text = "Ver Oferta na Shopee", color = White)
+                                Text(
+                                    text = products[index].offerTitle.orEmpty(),
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp,
+                                    color = Black
+                                )
+                                Text(
+                                    text = products[index].offerPrice.orEmpty(),
+                                    color = Color(0xFFFF6600),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                )
+
+                                Button(
+                                    onClick = {
+                                        listener?.onClickOffer(products[index])
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(
+                                            0xFFFF6600
+                                        )
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier
+                                        .height(40.dp)
+                                        .fillMaxWidth()
+                                        .align(Alignment.End)
+                                ) {
+                                    Text(text = "Ver Oferta na Shopee", color = White)
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            AdmobBanner()
         }
     }
 }
@@ -275,6 +326,10 @@ fun ProgressBar(isVisible: Boolean, progressTitle: String) {
 
 fun interface ListenerBanner {
     fun onClickLinkBanner(urlImage: String)
+}
+
+fun interface ListenerOffer {
+    fun onClickOffer(model: OfferCardModel)
 }
 
 @Preview(showBackground = true)

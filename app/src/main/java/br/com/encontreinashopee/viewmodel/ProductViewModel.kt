@@ -6,6 +6,8 @@ import br.com.encontreinashopee.intent.SearchOffersDataIntent
 import br.com.encontreinashopee.model.OfferCardModel
 import br.com.encontreinashopee.repository.products.ProductRepository
 import br.com.encontreinashopee.state.DataState
+import br.com.encontreinashopee.track.OffersTrack
+import br.com.encontreinashopee.track.OffersTrackContract
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +17,7 @@ import kotlinx.coroutines.launch
 
 class ProductViewModel(
     private val repository: ProductRepository,
+    private val track: OffersTrackContract
 ) : ViewModel() {
 
     val dataIntent = Channel<SearchOffersDataIntent>(Channel.UNLIMITED)
@@ -25,6 +28,10 @@ class ProductViewModel(
 
     init {
         handleEvents()
+    }
+
+    fun onClickOffer(offerCardModel: OfferCardModel) {
+        track.trackClickShowOffers(offerCardModel)
     }
 
     private fun handleEvents() {
@@ -38,11 +45,6 @@ class ProductViewModel(
     }
 
     private fun searchOffers() {
-        if (cache != null) {
-            _dataState.value = DataState.ResponseData(cache)
-            return
-        }
-
         viewModelScope.launch {
             _dataState.value = DataState.Loading
             repository.getOffers()

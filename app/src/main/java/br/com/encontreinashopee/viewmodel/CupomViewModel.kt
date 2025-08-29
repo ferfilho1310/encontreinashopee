@@ -3,8 +3,10 @@ package br.com.encontreinashopee.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.encontreinashopee.intent.SearchCupomsIntent
+import br.com.encontreinashopee.model.CupomModel
 import br.com.encontreinashopee.repository.cupoms.CupomRepository
 import br.com.encontreinashopee.state.DataState
+import br.com.encontreinashopee.track.OffersTrackContract
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +15,8 @@ import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 
 class CupomViewModel(
-    val repository: CupomRepository
+    val repository: CupomRepository,
+    private val tracker: OffersTrackContract
 ) : ViewModel() {
 
     val dataIntent = Channel<SearchCupomsIntent>(Channel.UNLIMITED)
@@ -22,6 +25,10 @@ class CupomViewModel(
 
     init {
         handleIntent()
+    }
+
+    fun onClickCupomTracker(cupomModel: CupomModel) {
+        tracker.trackClickCupons(cupomModel)
     }
 
     private fun handleIntent() {
@@ -41,7 +48,7 @@ class CupomViewModel(
                 .catch {
                     _dataState.value = DataState.Error(it.message)
                 }.collect {
-                    _dataState.value = DataState.ResponseData(it)
+                    _dataState.value = DataState.ResponseData(it.sortedByDescending { it.id })
                 }
         }
     }
