@@ -16,8 +16,8 @@ android {
         minSdk = 24
         //noinspection EditedTargetSdkVersion
         targetSdk = 35
-        versionCode = 23
-        versionName = "11.1"
+        versionCode = 24
+        versionName = "12.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -129,5 +129,8 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+// PlaceHolder
+    implementation("com.google.accompanist:accompanist-placeholder-material:0.36.0")
 
 }

@@ -23,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -37,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.White
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -62,7 +62,8 @@ import br.com.encontreinashopee.model.CupomModel
 import br.com.encontreinashopee.state.DataState
 import br.com.encontreinashopee.util.AdvertasingIds
 import br.com.encontreinashopee.viewmodel.CupomViewModel
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
@@ -101,6 +102,7 @@ fun LoadCupoms(
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CupomList(
     cupomList: List<CupomModel>,
@@ -122,32 +124,22 @@ fun CupomList(
             AdmobBannerCupom()
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = CenterHorizontally
-        ) {
-
-            if (isHaveCupom) {
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 8.dp)
-                        .padding(top = 8.dp)
-                ) {
-                    items(cupomList.size) {
-                        CupomItem(cupomList[it]) { cupomModel ->
-                            viewModel?.onClickCupomTracker(cupomModel)
-                            val intent = Intent(Intent.ACTION_VIEW, cupomModel.linkCupom?.toUri())
-                            context.startActivity(intent)
-                        }
+        if (isHaveCupom) {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .padding(horizontal = 8.dp, vertical = 8.dp)
+            ) {
+                items(cupomList.size) {
+                    CupomItem(cupomList[it]) { cupomModel ->
+                        viewModel?.onClickCupomTracker(cupomModel)
+                        val intent = Intent(Intent.ACTION_VIEW, cupomModel.linkCupom?.toUri())
+                        context.startActivity(intent)
                     }
                 }
-            } else {
-                EmptyCupom(paddingValues = innerPadding)
             }
+        } else {
+            EmptyCupom(paddingValues = innerPadding)
         }
     }
 }
@@ -174,10 +166,13 @@ private fun EmptyCupom(paddingValues: PaddingValues) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CupomTopBar(navController: NavHostController? = null) {
+private fun CupomTopBar(
+    navController: NavHostController? = null,
+) {
     Row(
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(
             onClick = {
@@ -239,13 +234,21 @@ fun CupomItem(
                 .fillMaxWidth()
         ) {
 
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = cupomModel.imageCupom,
-                contentDescription = null,
+                contentDescription = "Minha imagem",
                 modifier = Modifier
                     .size(150.dp)
                     .padding(end = 16.dp),
-                contentScale = ContentScale.Crop
+                loading = {
+                    ShimmerBox()
+                },
+                error = {
+                    ShimmerBox()
+                },
+                success = {
+                    SubcomposeAsyncImageContent()
+                }
             )
 
             Column(
